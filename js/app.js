@@ -6,7 +6,6 @@ import { renderSubject } from './views/subject.js';
 import { renderChapter } from './views/chapter.js';
 import { renderSettings } from './views/settings.js';
 import { renderSearch } from './views/search.js';
-import { renderGlossary } from './views/glossary.js';
 import { renderAllCards } from './views/allcards.js';
 
 const views = {
@@ -15,7 +14,6 @@ const views = {
   chapter: renderChapter,
   settings: renderSettings,
   search: renderSearch,
-  glossary: renderGlossary,
   allcards: renderAllCards
 };
 

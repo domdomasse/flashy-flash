@@ -7,13 +7,23 @@ export function onCleanup(fn) {
   cleanups.push(fn);
 }
 
+/** Run cleanups added after a certain point (for tab switching) */
+export function runCleanupsFrom(mark) {
+  while (cleanups.length > mark) cleanups.pop()();
+}
+
+/** Get current cleanup stack size (bookmark before rendering a tab) */
+export function getCleanupMark() {
+  return cleanups.length;
+}
+
 export async function renderView(viewFn, params) {
   while (cleanups.length) cleanups.pop()();
   app.innerHTML = '';
   try {
     await viewFn(app, params);
   } catch (err) {
-    console.error('[Flashy Flash]', err);
+    console.error('[Flashmob]', err);
     app.appendChild(el('div', { style: 'text-align:center;padding:60px 20px;color:#f43f5e;' },
       el('p', { style: 'font-size:1.5rem;margin-bottom:8px;' }, '⚠️'),
       el('p', {}, 'Erreur de chargement.'),

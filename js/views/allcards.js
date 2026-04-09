@@ -1,4 +1,4 @@
-import { getCatalog } from '../data.js';
+import { getCatalog, getAllCards } from '../data.js';
 import { getCardProgress } from '../store.js';
 import { el } from '../render.js';
 import { navigate } from '../router.js';
@@ -15,12 +15,10 @@ const SORT_OPTIONS = [
 export async function renderAllCards(container, { filter, subject: subjectFilter }) {
   const catalog = await getCatalog();
 
-  // Determine which subjects to load
   const subjects = subjectFilter
     ? catalog.subjects.filter(s => s.id === subjectFilter)
     : catalog.subjects;
 
-  // Back button: go to subject page if filtered, otherwise home
   const backRoute = subjectFilter || '';
   const subjectName = subjectFilter ? subjects[0]?.name : '';
   const titlePrefix = subjectName ? `${subjectName} — ` : '';
@@ -31,28 +29,12 @@ export async function renderAllCards(container, { filter, subject: subjectFilter
     el('h1', {}, title)
   );
 
-  // Load cards
-  const allItems = [];
-  for (const subject of subjects) {
-    for (const chapter of subject.chapters) {
-      try {
-        const res = await fetch(`data/${subject.id}/${chapter.id}/cards.json`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        const catMap = {};
-        for (const cat of data.categories) catMap[cat.id] = cat.label;
-        for (const card of data.cards) {
-          const cardId = `${subject.id}/${chapter.id}/${card.id}`;
-          const progress = getCardProgress(cardId);
-          allItems.push({
-            card, cardId, progress,
-            subject, chapter,
-            catLabel: catMap[card.cat] || card.cat
-          });
-        }
-      } catch { /* skip */ }
-    }
-  }
+  // Load cards via centralized cache
+  const rawItems = await getAllCards(subjects);
+  const allItems = rawItems.map(item => ({
+    ...item,
+    progress: getCardProgress(item.cardId)
+  }));
 
   // Apply filter
   let items;

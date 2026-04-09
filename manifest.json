@@ -1,6 +1,6 @@
 {
-  "name": "Flashy Flash — Révisions Bac",
-  "short_name": "Flashy Flash",
+  "name": "Flashmob — Révisions Bac",
+  "short_name": "Flashmob",
   "description": "Révise tes cours pour le bac : flashcards, résumés, exercices",
   "start_url": "./",
   "scope": "./",

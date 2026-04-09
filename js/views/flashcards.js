@@ -46,6 +46,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   // ══════════════════════════════════════
 
   const progressText = el('span', {}, '');
+  const progressCounter = el('div', { class: 'fc-counter' }, icon('hash', 14), progressText);
   const countGood = el('span', {}, '0');
   const countBad = el('span', {}, '0');
   const progressFill = el('div', { class: 'fc-progress-fill' });
@@ -53,39 +54,142 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   const listToggleBtn = el('button', { class: 'fc-list-toggle', onClick: toggleListMode }, icon('list', 16));
   const focusToggleBtn = el('button', { class: 'fc-list-toggle', onClick: toggleFocusMode }, icon('maximize-2', 16));
 
+  // ── Filter menu (drawer on mobile, dropdown on desktop) ──
+  const filterBtns = [];
+  const filterList = el('div', { class: 'fc-filter-list' });
+
+  filterList.appendChild(el('div', { class: 'fc-filter-section-title' }, 'Catégories'));
+  addFilterItem('all', 'Toutes les cartes', icon('layers', 18), allCards.length);
+  for (const cat of categories) {
+    const count = allCards.filter(c => c.cat === cat.id).length;
+    addFilterItem(cat.id, cat.label, null, count);
+  }
+  filterList.appendChild(el('div', { class: 'fc-filter-section-title' }, 'Filtres'));
+  addFilterItem('favorites', 'Favoris', icon('star', 18));
+  addFilterItem('weak', 'Points faibles', icon('flame', 18));
+
+  function addFilterItem(id, label, iconEl, count) {
+    const btn = el('button', {
+      class: 'fc-filter-item' + (id === 'all' ? ' active' : ''),
+      onClick: () => {
+        if (listMode) toggleListMode();
+        setFilter(id, btn);
+        closeFilterMenu();
+      }
+    },
+      iconEl || el('span', { class: 'fc-filter-dot' }),
+      el('span', { class: 'fc-filter-item-label' }, label),
+      count != null ? el('span', { class: 'fc-filter-item-count' }, String(count)) : false
+    );
+    filterList.appendChild(btn);
+    filterBtns.push(btn);
+  }
+
+  const filterOverlay = el('div', { class: 'fc-filter-overlay', onClick: closeFilterMenu });
+  const filterMenu = el('div', { class: 'fc-filter-menu' },
+    el('div', { class: 'fc-filter-menu-header' },
+      el('span', { class: 'fc-filter-menu-title' }, 'Filtrer les cartes'),
+      el('button', { class: 'fc-filter-menu-close', onClick: closeFilterMenu }, icon('x', 20))
+    ),
+    filterList
+  );
+  const filterContainer = el('div', { class: 'fc-filter-container' }, filterOverlay, filterMenu);
+
+  let filterMenuOpen = false;
+  function toggleFilterMenu() {
+    filterMenuOpen = !filterMenuOpen;
+    filterContainer.classList.toggle('open', filterMenuOpen);
+    filterTrigger.classList.toggle('active', filterMenuOpen);
+    if (filterMenuOpen) refreshIcons();
+  }
+  function closeFilterMenu() {
+    filterMenuOpen = false;
+    filterContainer.classList.remove('open');
+    filterTrigger.classList.remove('active');
+  }
+
+  // Filter trigger button (in stats bar)
+  const filterLabel = el('span', {}, 'Toutes');
+  const filterTrigger = el('button', { class: 'fc-filter-trigger', onClick: toggleFilterMenu },
+    icon('filter', 16), ' ', filterLabel, el('span', { class: 'fc-filter-chevron' }, icon('chevron-down', 14))
+  );
+  const filterTriggerWrap = el('div', { class: 'fc-filter-trigger-wrap' }, filterTrigger, filterContainer);
+
+  const badgeGood = el('span', { class: 'fc-badge good clickable', onClick: () => toggleSessionList('good') }, icon('check', 14), ' ', countGood);
+  const badgeBad = el('span', { class: 'fc-badge bad clickable', onClick: () => toggleSessionList('bad') }, icon('x', 14), ' ', countBad);
+
+  // Focus exit button (only visible in focus mode)
+  const focusExitBtn = el('button', { class: 'fc-focus-exit', onClick: toggleFocusMode }, icon('minimize-2', 20));
+
   const stats = el('div', { class: 'fc-stats' },
-    progressText,
+    el('div', { class: 'fc-stats-left' }, filterTriggerWrap, progressCounter),
     el('div', { class: 'fc-badges' },
-      el('span', { class: 'fc-badge good' }, icon('check', 14), ' ', countGood),
-      el('span', { class: 'fc-badge bad' }, icon('x', 14), ' ', countBad),
+      badgeGood, badgeBad,
       listToggleBtn,
       focusToggleBtn
     )
   );
   const progressBar = el('div', { class: 'fc-progress-wrap' }, progressFill);
 
-  // Filters
-  const filtersLine1 = el('div', { class: 'fc-filters' });
-  const filtersLine2 = el('div', { class: 'fc-filters fc-filters-special' });
-  const filterBtns = [];
+  // Session list (good/bad answers during current session)
+  const sessionListEl = el('div', { class: 'fc-session-list' });
+  const sessionScrollHint = el('div', { class: 'fc-session-scroll-hint' }, icon('chevron-down', 18));
+  const sessionWrap = el('div', { class: 'fc-session-list-wrap hidden' }, sessionListEl, sessionScrollHint);
+  let sessionListType = null;
 
-  function addFilter(id, label, line, extraClass) {
-    const btn = el('button', {
-      class: 'fc-filter-btn' + (id === 'all' ? ' active' : '') + (extraClass ? ' ' + extraClass : ''),
-      onClick: () => { if (listMode) toggleListMode(); setFilter(id, btn); }
-    }, label);
-    line.appendChild(btn);
-    filterBtns.push(btn);
+  // Hide scroll hint when scrolled to bottom
+  sessionListEl.addEventListener('scroll', () => {
+    const atBottom = sessionListEl.scrollTop + sessionListEl.clientHeight >= sessionListEl.scrollHeight - 10;
+    sessionScrollHint.classList.toggle('hidden', atBottom);
+  });
+
+  function toggleSessionList(type) {
+    if (sessionListType === type) {
+      sessionWrap.classList.add('hidden');
+      sessionListType = null;
+      return;
+    }
+    sessionListType = type;
+    const cards = type === 'good' ? goodList : badList;
+    sessionListEl.innerHTML = '';
+    if (cards.length === 0) {
+      sessionListEl.appendChild(el('p', { class: 'cardlist-info' },
+        type === 'good' ? 'Aucune bonne réponse pour l\'instant.' : 'Aucune mauvaise réponse pour l\'instant.'
+      ));
+    } else {
+      sessionListEl.appendChild(el('p', { class: 'cardlist-info' },
+        `${cards.length} ${type === 'good' ? 'correcte' : 'à revoir'}${cards.length > 1 ? 's' : ''}`
+      ));
+      for (const card of cards) {
+        const answerDiv = el('div', { class: 'cardlist-a hidden' });
+        answerDiv.innerHTML = card.a;
+        const catLabel = catMap[card.cat] || card.cat;
+        sessionListEl.appendChild(el('div', {
+          class: 'cardlist-card',
+          onClick: () => answerDiv.classList.toggle('hidden')
+        },
+          el('div', { class: 'cardlist-header' },
+            el('div', { class: 'cardlist-left' },
+              el('span', { class: 'cardlist-cat' }, catLabel),
+              el('div', { class: 'cardlist-q' }, card.q)
+            ),
+            el('span', { class: 'cardlist-score ' + (type === 'good' ? 'good' : 'bad') },
+              type === 'good' ? '✓' : '✗')
+          ),
+          answerDiv
+        ));
+      }
+    }
+    sessionWrap.classList.remove('hidden');
+    sessionListEl.scrollTop = 0;
+    // Show/hide scroll hint based on content
+    requestAnimationFrame(() => {
+      sessionScrollHint.classList.toggle('hidden', sessionListEl.scrollHeight <= sessionListEl.clientHeight);
+    });
+    refreshIcons();
   }
 
-  addFilter('all', 'Toutes', filtersLine1);
-  for (const cat of categories) addFilter(cat.id, cat.label, filtersLine1);
-  addFilter('favorites', 'Favoris', filtersLine2, 'fc-filter-special');
-  addFilter('weak', 'Points faibles', filtersLine2, 'fc-filter-special');
-
-  const filtersWrap = el('div', { class: 'fc-filters-wrap' }, filtersLine1, filtersLine2);
-
-  // Card list
+  // Card list (browse all / ban)
   const cardListEl = el('div', { class: 'fc-cardlist hidden' });
 
   // Card elements
@@ -105,31 +209,39 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     favBtn.classList.toggle('active', isFav);
   }}, '☆');
 
+  // Answer zones on the back of the card
+  const zoneBad = el('button', { class: 'fc-zone bad', onClick: (e) => { e.stopPropagation(); if (isFlipped) answerCard(false); } },
+    icon('x', 20), el('span', {}, 'À revoir')
+  );
+  const zoneGood = el('button', { class: 'fc-zone good', onClick: (e) => { e.stopPropagation(); if (isFlipped) answerCard(true); } },
+    icon('check', 20), el('span', {}, 'Je savais')
+  );
+  const answerZones = el('div', { class: 'fc-zones' }, zoneBad, zoneGood);
+
+  const skipBtn = el('button', { class: 'fc-skip', onClick: (e) => {
+    e.stopPropagation();
+    if (!animating && !flipping) goNext();
+  }}, icon('skip-forward', 16), ' Passer');
+
   const cardEl = el('div', { class: 'fc-card' },
     el('div', { class: 'fc-card-inner' },
       el('div', { class: 'fc-card-front' },
-        categoryTag, questionText,
+        categoryTag, favBtn, questionText,
+        skipBtn,
         el('span', { class: 'fc-hint' }, 'Appuyer pour révéler')
       ),
-      el('div', { class: 'fc-card-back' }, answerText)
+      el('div', { class: 'fc-card-back' }, answerText, answerZones)
     ),
     overlayGood, overlayBad
   );
-  const cardContainer = el('div', { class: 'fc-card-container' }, favBtn, cardEl);
+  const cardContainer = el('div', { class: 'fc-card-container' }, cardEl);
 
   const swipeHint = el('p', { class: 'fc-swipe-hint' },
     '◀ swipe pour naviguer \u00a0·\u00a0 tap pour retourner ▶'
   );
 
   // Actions
-  const actionsEl = el('div', { class: 'fc-actions hidden' });
-  const btnBad = el('button', { class: 'fc-action-btn bad', onClick: () => answerCard(false) }, icon('x', 18), ' À revoir');
-  const btnGood = el('button', { class: 'fc-action-btn good', onClick: () => answerCard(true) }, icon('check', 18), ' Je savais');
-  actionsEl.append(btnBad, btnGood);
 
-  const btnPrev = el('button', { disabled: true, onClick: goPrev }, icon('chevron-left', 16), ' Précédente');
-  const btnNext = el('button', { onClick: goNext }, 'Suivante ', icon('chevron-right', 16));
-  const navEl = el('div', { class: 'fc-nav' }, btnPrev, btnNext);
 
   // End screen
   const endBarFill = el('div', { class: 'fc-end-bar-fill' });
@@ -147,38 +259,29 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     el('div', { class: 'fc-end-actions' }, btnRestart, btnRetry, btnReset)
   );
 
-  const deckArea = el('div', { class: 'fc-deck-area' }, cardContainer, swipeHint, actionsEl, navEl, endEl);
+  const deckArea = el('div', { class: 'fc-deck-area' }, focusExitBtn, cardContainer, swipeHint, endEl);
 
-  // Place filters in the dedicated slot (between tabs and content) if available
-  if (filterSlot) {
-    filterSlot.append(filtersWrap);
-  }
-  container.append(stats, progressBar, deckArea, cardListEl);
+  container.append(stats, progressBar, sessionWrap, deckArea, cardListEl);
 
   // ══════════════════════════════════════
   // Focus mode (#10)
   // ══════════════════════════════════════
 
   function toggleFocusMode() {
+    // Exit list mode first if active
+    if (listMode) toggleListMode();
     focusMode = !focusMode;
     focusToggleBtn.classList.toggle('active', focusMode);
-    container.classList.toggle('fc-focus', focusMode);
+    document.getElementById('app').classList.toggle('fc-focus', focusMode);
   }
 
   // ══════════════════════════════════════
   // Filter collapse (#9)
   // ══════════════════════════════════════
 
-  let filtersCollapsed = false;
-  function collapseFilters() {
-    if (filtersCollapsed) return;
-    filtersCollapsed = true;
-    filtersWrap.classList.add('collapsed');
-  }
-  function expandFilters() {
-    filtersCollapsed = false;
-    filtersWrap.classList.remove('collapsed');
-  }
+  // No-ops — filter collapse no longer needed with drawer/dropdown
+  function collapseFilters() {}
+  function expandFilters() {}
 
   // ══════════════════════════════════════
   // Card list
@@ -189,6 +292,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     listToggleBtn.classList.toggle('active', listMode);
     deckArea.classList.toggle('hidden', listMode);
     cardListEl.classList.toggle('hidden', !listMode);
+    sessionWrap.classList.add('hidden'); sessionListType = null;
     if (listMode) { renderCardList(); expandFilters(); }
   }
 
@@ -196,7 +300,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     cardListEl.innerHTML = '';
     const filtered = getFilteredAll();
     cardListEl.appendChild(el('p', { class: 'cardlist-info' },
-      `${filtered.length} cartes · Appuie sur une carte pour voir la réponse · ✓ = active, 🚫 = bannie`
+      `${filtered.length} cartes · Appuie pour voir la réponse · Swipe → bannir · Swipe ← débannir`
     ));
     for (const card of filtered) {
       const cardId = storeId(card);
@@ -206,26 +310,64 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       const answerDiv = el('div', { class: 'cardlist-a hidden' });
       answerDiv.innerHTML = card.a;
       const catLabel = catMap[card.cat] || card.cat;
-      const banBtn = el('button', {
-        class: 'cardlist-ban' + (isBanned ? ' active' : ''),
-        onClick: (e) => {
-          e.stopPropagation();
-          const nowBanned = toggleBanned(cardId);
-          banBtn.classList.toggle('active', nowBanned);
-          banBtn.textContent = nowBanned ? '🚫' : '✓';
-          cardRow.classList.toggle('banned', nowBanned);
-        }
-      }, isBanned ? '🚫' : '✓');
+      const banBar = el('div', { class: 'cardlist-banbar' + (isBanned ? ' banned' : '') });
+
+      function doBan() {
+        const nowBanned = toggleBanned(cardId);
+        banBar.classList.toggle('banned', nowBanned);
+        cardRow.classList.toggle('banned', nowBanned);
+      }
+
+      // Ban bar click (desktop)
+      banBar.addEventListener('click', (e) => { e.stopPropagation(); doBan(); });
+
       const cardRow = el('div', {
         class: 'cardlist-card' + (isBanned ? ' banned' : ''),
         onClick: () => answerDiv.classList.toggle('hidden')
       },
-        el('div', { class: 'cardlist-header' },
-          el('div', { class: 'cardlist-left' },
-            el('span', { class: 'cardlist-cat' }, catLabel), questionDiv),
-          banBtn),
-        answerDiv
+        el('div', { class: 'cardlist-body' },
+          el('div', { class: 'cardlist-header' },
+            el('div', { class: 'cardlist-left' },
+              el('span', { class: 'cardlist-cat' }, catLabel), questionDiv)
+          ),
+          answerDiv
+        ),
+        banBar
       );
+
+      // Swipe to ban/unban (mobile)
+      let sX = 0, sY = 0, swiping = false;
+      cardRow.addEventListener('touchstart', (e) => {
+        sX = e.changedTouches[0].clientX;
+        sY = e.changedTouches[0].clientY;
+        swiping = false;
+      }, { passive: true });
+      cardRow.addEventListener('touchmove', (e) => {
+        const dx = e.changedTouches[0].clientX - sX;
+        if (!swiping && Math.abs(dx) > 15 && Math.abs(dx) > Math.abs(e.changedTouches[0].clientY - sY)) {
+          swiping = true;
+        }
+        if (swiping) {
+          e.preventDefault();
+          const clamp = Math.max(-60, Math.min(60, dx));
+          cardRow.style.transform = `translateX(${clamp}px)`;
+          cardRow.style.transition = 'none';
+        }
+      }, { passive: false });
+      cardRow.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - sX;
+        cardRow.style.transition = 'transform 0.2s ease';
+        cardRow.style.transform = '';
+        if (swiping && Math.abs(dx) > 30) {
+          // Swipe right = ban, swipe left = unban
+          const currentlyBanned = cardRow.classList.contains('banned');
+          if (dx > 0 && !currentlyBanned) doBan();
+          else if (dx < 0 && currentlyBanned) doBan();
+          e.preventDefault();
+        }
+        swiping = false;
+      }, { passive: false });
+
       cardListEl.appendChild(cardRow);
     }
     refreshIcons();
@@ -254,6 +396,10 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     activeFilter = id;
     filterBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    // Update trigger label
+    const labelMap = { all: 'Toutes', favorites: 'Favoris', weak: 'Points faibles' };
+    const catObj = categories.find(c => c.id === id);
+    filterLabel.textContent = labelMap[id] || (catObj ? catObj.label : id);
     if (listMode) { renderCardList(); }
     else {
       const filtered = getFiltered();
@@ -270,8 +416,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     deck = []; currentIdx = 0;
     cardContainer.style.display = 'none';
     swipeHint.style.display = 'none';
-    actionsEl.style.display = 'none';
-    navEl.style.display = 'none';
     endEl.classList.add('hidden');
     let emptyEl = deckArea.querySelector('.fc-empty');
     if (!emptyEl) {
@@ -292,12 +436,9 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       : shuffle([...cards]);
     currentIdx = 0; goodList = []; badList = [];
     countGood.textContent = '0'; countBad.textContent = '0';
-    filtersCollapsed = false; filtersWrap.classList.remove('collapsed');
+    sessionWrap.classList.add('hidden'); sessionListType = null;
     cardContainer.style.display = '';
     swipeHint.style.display = '';
-    actionsEl.style.display = '';
-    actionsEl.classList.add('hidden');
-    navEl.style.display = '';
     endEl.classList.add('hidden');
     renderCard();
   }
@@ -313,7 +454,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     isFlipped = false;
     cardEl.classList.remove('flipped');
     cardEl.style.transform = '';
-    actionsEl.classList.add('hidden');
     overlayGood.style.opacity = '0';
     overlayBad.style.opacity = '0';
 
@@ -324,24 +464,20 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
 
     progressText.textContent = `${currentIdx + 1} / ${deck.length}`;
     progressFill.style.width = (currentIdx / deck.length * 100) + '%';
-    btnPrev.disabled = currentIdx === 0;
-    btnNext.disabled = false;
     countGood.textContent = goodList.length;
     countBad.textContent = badList.length;
     animating = false;
   }
 
+  let flipping = false;
   function flipCard() {
-    if (animating) return;
+    if (animating || flipping) return;
+    flipping = true;
     isFlipped = !isFlipped;
     cardEl.classList.toggle('flipped', isFlipped);
-    actionsEl.classList.toggle('hidden', !isFlipped);
-    // Hide fav during flip, show after
-    favBtn.style.opacity = '0';
-    setTimeout(() => { favBtn.style.opacity = ''; }, 500);
-    // Update swipe hint when flipped
     if (isFlipped) swipeHint.textContent = '◀ À revoir \u00a0·\u00a0 tap pour retourner \u00a0·\u00a0 Je savais ▶';
     else swipeHint.textContent = '◀ swipe pour naviguer \u00a0·\u00a0 tap pour retourner ▶';
+    setTimeout(() => { flipping = false; }, 550);
   }
 
   function goNext() {
@@ -378,7 +514,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
     cardEl.style.transform = `translateX(${dir * 120}%) rotate(${dir * 10}deg)`;
     cardEl.style.opacity = '0';
-    favBtn.style.opacity = '0';
 
     setTimeout(() => {
       const inner = cardEl.querySelector('.fc-card-inner');
@@ -393,7 +528,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
           cardEl.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
           cardEl.style.transform = '';
           cardEl.style.opacity = '';
-          favBtn.style.opacity = '';
           setTimeout(() => {
             cardEl.style.transition = '';
             inner.style.transition = '';
@@ -410,8 +544,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   function showEnd() {
     cardContainer.style.display = 'none';
     swipeHint.style.display = 'none';
-    actionsEl.style.display = 'none';
-    navEl.style.display = 'none';
     endEl.classList.remove('hidden');
     expandFilters();
 
@@ -480,6 +612,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       isDragging = true;
     }
     if (!isDragging) return;
+    e.preventDefault();
 
     // Card tilt
     const rotation = Math.max(-10, Math.min(10, dx * 0.06));
@@ -496,7 +629,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
         overlayGood.style.opacity = '0';
       }
     }
-  }, { passive: true });
+  }, { passive: false });
 
   cardEl.addEventListener('touchend', e => {
     if (animating) return;
@@ -512,8 +645,11 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     if (!isDragging && ax < 20 && ay < 20) {
       cardEl.style.transition = '';
       cardEl.style.transform = '';
+      // Don't flip if tapping an answer zone or skip button
+      const target = e.target;
+      if (target.closest && (target.closest('.fc-zone') || target.closest('.fc-skip'))) return;
       flipCard();
-    } else if (isDragging && ax > 50 && ax > ay) {
+    } else if (isDragging && ax > 30 && ax > ay) {
       if (isFlipped) {
         // Swipe to answer
         answerCard(dx > 0);
@@ -542,7 +678,10 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   // ══════════════════════════════════════
 
   const abortCtrl = new AbortController();
-  onCleanup(() => abortCtrl.abort());
+  onCleanup(() => {
+    abortCtrl.abort();
+    document.getElementById('app').classList.remove('fc-focus');
+  });
 
   document.addEventListener('keydown', e => {
     if (listMode || animating) return;

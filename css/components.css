@@ -14,40 +14,69 @@
   text-align: center;
   min-height: var(--tap-size);
 }
-.subject-card:active { transform: scale(0.96); opacity: 0.8; }
+.subject-card:active { transform: scale(0.96); opacity: 0.7; }
 .subject-card .icon { font-size: 2rem; }
 .subject-card .name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
 .subject-card .meta { font-size: 0.75rem; color: var(--text-muted); }
 
-/* ── Chapter card ── */
-.chapter-card {
+/* ── Chapter card (stacked layout) ── */
+.ch-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 14px;
-  padding: 16px;
+  padding: 18px;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
   border-radius: var(--radius);
   cursor: pointer;
   touch-action: manipulation;
-  transition: all var(--transition);
-  min-height: var(--tap-size);
-  margin-bottom: 10px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  margin-bottom: 12px;
 }
-.chapter-card:active { transform: scale(0.98); opacity: 0.8; }
-.chapter-card .icon { font-size: 1.5rem; flex-shrink: 0; }
-.chapter-card .info { flex: 1; min-width: 0; }
-.chapter-card .name { font-size: 0.95rem; font-weight: 600; color: var(--text); }
-.chapter-card .meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+.ch-card:active { opacity: 0.7; }
 
-.chapter-revise-btn {
+.ch-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ch-card-icon {
+  font-size: 1.6rem;
   flex-shrink: 0;
+  width: 40px;
+  text-align: center;
+}
+.ch-card-info {
+  flex: 1;
+  min-width: 0;
+}
+.ch-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+.ch-card-meta {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 8px 14px;
-  background: var(--accent);
-  color: #0f172a;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.ch-card-actions {
+  display: flex;
+  gap: 8px;
+}
+.ch-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0;
   border: none;
   border-radius: var(--radius-sm);
   font-size: 13px;
@@ -55,15 +84,15 @@
   cursor: pointer;
   touch-action: manipulation;
   white-space: nowrap;
-  transition: opacity var(--transition);
+  transition: opacity var(--transition), filter var(--transition), transform var(--transition);
+  min-height: var(--tap-size);
 }
-.chapter-revise-btn:active { opacity: 0.7; }
-.chapter-actions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
+.ch-action-btn:active { opacity: 0.7; }
+.ch-revise {
+  background: var(--accent);
+  color: var(--on-accent);
 }
-.glossary-btn {
+.ch-glossary {
   background: var(--surface2);
   color: var(--accent);
   border: 1px solid var(--border);

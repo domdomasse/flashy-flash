@@ -9,7 +9,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 18px;
 }
 .summary-section-title {
   font-size: 1.1rem;
@@ -162,7 +162,7 @@
 /* ── Back to top button ── */
 .back-to-top {
   position: fixed;
-  bottom: 24px;
+  bottom: 76px;
   right: 20px;
   z-index: 900;
   width: 44px;
@@ -170,7 +170,7 @@
   border: none;
   border-radius: 50%;
   background: var(--accent);
-  color: #0f172a;
+  color: var(--on-accent);
   box-shadow: 0 4px 16px rgba(0,0,0,.25);
   cursor: pointer;
   touch-action: manipulation;
@@ -199,7 +199,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 18px;
   margin-bottom: 16px;
 }
 .exercise-header {
@@ -218,10 +218,10 @@
   border-radius: 999px;
   background: rgba(56,189,248,.12);
   color: var(--accent);
-  border: 1px solid rgba(56,189,248,.3);
+  border: 1px solid var(--accent-border);
 }
 .exercise-duration {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 .exercise-title {
@@ -395,8 +395,92 @@
    GLOSSARY
    ══════════════════════════════════════ */
 
+/* Search */
+.glossary-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: var(--tap-size);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+.glossary-search-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  display: inline-flex;
+}
+.glossary-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+  min-width: 0;
+}
+.glossary-search-input::placeholder { color: var(--text-muted); }
+.glossary-search:focus-within { border-color: var(--accent); }
+
+/* Letter bar */
+.glossary-letter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.glossary-letter-btn {
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--transition);
+}
+.glossary-letter-btn:active { opacity: 0.7; }
+.glossary-letter-btn.dimmed {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Count */
+.glossary-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+/* Letter groups */
+.glossary-group {
+  margin-bottom: 16px;
+}
+.glossary-group-header {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--accent);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+  position: sticky;
+  top: 60px;
+  background: var(--bg);
+  z-index: 10;
+}
+
+/* Cards */
 .glossary-card {
-  padding: 16px;
+  padding: 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -414,14 +498,6 @@
   color: var(--text);
 }
 .glossary-def strong { color: var(--accent); }
-.glossary-source {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 8px;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-.glossary-source:active { color: var(--accent); }
 
 /* ── Glossary inline links (in Cours/Résumé) ── */
 .glossary-link {
@@ -470,13 +546,40 @@
    CARD LIST (browse all flashcards)
    ══════════════════════════════════════ */
 
+/* Sort buttons */
+.fc-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.fc-filter-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--transition);
+}
+.fc-filter-btn:active { opacity: 0.7; }
+.fc-filter-btn.active {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
 .cardlist-info {
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   margin-bottom: 14px;
   line-height: 1.5;
 }
 .cardlist-card {
+  display: flex;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -484,9 +587,14 @@
   cursor: pointer;
   touch-action: manipulation;
   transition: opacity var(--transition);
+  overflow: hidden;
 }
 .cardlist-card.banned {
   opacity: 0.45;
+}
+.cardlist-body {
+  flex: 1;
+  min-width: 0;
 }
 .cardlist-header {
   display: flex;
@@ -508,7 +616,7 @@
   border-radius: 999px;
   background: rgba(56,189,248,.12);
   color: var(--accent);
-  border: 1px solid rgba(56,189,248,.3);
+  border: 1px solid var(--accent-border);
   margin-bottom: 6px;
 }
 .cardlist-q {
@@ -521,33 +629,29 @@
   font-size: 0.85rem;
   line-height: 1.6;
   color: var(--text-secondary);
-  padding: 0 14px 14px;
+  padding: 10px 14px 14px;
   border-top: 1px solid var(--border);
-  margin: 0 14px;
-  padding-top: 10px;
 }
 .cardlist-a.hidden { display: none; }
 .cardlist-a strong { color: var(--accent); }
-.cardlist-ban {
+/* Ban bar — vertical strip on the right side of card */
+.cardlist-banbar {
   flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
+  width: 10px;
+  border: none;
+  background: var(--accent);
   cursor: pointer;
   touch-action: manipulation;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--transition);
+  transition: width var(--transition), background var(--transition);
+  padding: 0;
 }
-.cardlist-ban.active {
-  background: rgba(244,63,94,.12);
-  border-color: var(--bad);
+.cardlist-banbar:active {
+  width: 16px;
 }
-.cardlist-ban:active { opacity: 0.7; }
+.cardlist-banbar.banned {
+  background: var(--bad);
+  width: 12px;
+}
 .cardlist-score {
   flex-shrink: 0;
   width: 32px;
@@ -602,11 +706,13 @@
 }
 .dashboard-stat {
   flex: 1;
+  min-width: 0;
   text-align: center;
   padding: 10px 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 .dashboard-stat-value {
   font-size: 1.2rem;
@@ -625,6 +731,6 @@
 }
 .dashboard-stat.clickable:active {
   transform: scale(0.95);
-  opacity: 0.8;
+  opacity: 0.7;
   border-color: var(--accent);
 }

@@ -86,7 +86,7 @@ export async function renderSettings(container) {
     const blob = new Blob([exportData()], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'flashy-flash-progression.json';
+    a.href = url; a.download = 'flashmob-progression.json';
     a.click();
     URL.revokeObjectURL(url);
   }}, '📥 Exporter ma progression');

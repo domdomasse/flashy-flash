@@ -131,59 +131,73 @@
   gap: 12px;
 }
 
-/* Tab bar */
-.tab-bar {
-  display: flex;
-  gap: 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--border);
-  scrollbar-width: none;
-}
-.tab-bar::-webkit-scrollbar { display: none; }
+/* ══════════════════════════════════════
+   TAB BAR (desktop ≥ 1024px only)
+   ══════════════════════════════════════ */
 
-.tab-bar button {
-  flex-shrink: 0;
-  padding: 12px 16px;
-  min-height: var(--tap-size);
+.tab-bar {
+  display: none; /* hidden on mobile/tablet */
+}
+
+/* ══════════════════════════════════════
+   BOTTOM NAV (mobile/tablet < 1024px)
+   ══════════════════════════════════════ */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.bottom-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 0 6px;
+  min-height: 56px;
   border: none;
   background: none;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
+  color: var(--text-muted);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
   touch-action: manipulation;
-  transition: all var(--transition);
-  white-space: nowrap;
+  transition: color var(--transition);
+  position: relative;
 }
-/* Filter slot between tabs and content */
-.tab-filter-slot:empty {
-  display: none;
+.bottom-nav-btn.active {
+  color: var(--accent);
 }
-.tab-filter-slot {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 12px 8px;
-  margin-bottom: 16px;
-  transition: padding 0.3s ease, margin 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+.bottom-nav-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
 }
-.tab-filter-slot:has(.fc-filters-wrap.collapsed) {
-  padding: 0;
-  margin-bottom: 0;
-  border-color: transparent;
-  opacity: 0;
-  overflow: hidden;
-  max-height: 0;
+.bottom-nav-btn:active { opacity: 0.7; }
+.bottom-nav-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
-.tab-bar button.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+/* Extra bottom padding when bottom nav is visible */
+.view.has-bottom-nav {
+  padding-bottom: max(80px, calc(56px + env(safe-area-inset-bottom, 24px)));
 }
-.tab-bar button:active { opacity: 0.7; }
+
+/* Filter slot (legacy, kept for compatibility) */
+.tab-filter-slot:empty { display: none; }
 
 /* Responsive — tablet */
 @media (min-width: 600px) {
@@ -191,9 +205,49 @@
   .subject-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
 }
 
-/* Responsive — desktop */
+/* Responsive — desktop (≥ 1024px): top tabs, no bottom nav */
 @media (min-width: 1024px) {
   #app { max-width: 960px; padding: 0 32px; }
+
+  /* Show top tab bar */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-bar button {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    min-height: var(--tap-size);
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    touch-action: manipulation;
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+  .tab-bar button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-bar button:active { opacity: 0.7; }
+
+  /* Hide bottom nav */
+  .bottom-nav { display: none; }
+
+  /* Reset bottom padding */
+  .view.has-bottom-nav {
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  }
 }
 
 /* Safe area for notched phones */

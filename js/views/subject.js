@@ -62,25 +62,20 @@ export async function renderSubject(container, { subject: subjectId }) {
   );
 
   for (const chapter of subject.chapters) {
-    const glossaryBtn = el('button', {
-      class: 'chapter-revise-btn glossary-btn',
-      onClick: (e) => { e.stopPropagation(); navigate(`${subjectId}/glossary`); },
-      'aria-label': 'Glossaire'
-    }, icon('book-open', 16));
-
-    const reviseBtn = el('button', {
-      class: 'chapter-revise-btn',
-      onClick: (e) => { e.stopPropagation(); navigate(`${subjectId}/${chapter.id}/flashcards`); },
-      'aria-label': 'Réviser'
-    }, icon('play', 16), ' Réviser');
-
-    const card = el('div', { class: 'chapter-card', onClick: () => navigate(`${subjectId}/${chapter.id}`) },
-      el('span', { class: 'icon' }, chapter.icon || '📄'),
-      el('div', { class: 'info' },
-        el('div', { class: 'name' }, chapter.name),
-        el('div', { class: 'meta' }, `${chapter.cardCount} cartes`)
-      ),
-      el('div', { class: 'chapter-actions' }, glossaryBtn, reviseBtn)
+    const card = el('div', {
+      class: 'ch-card',
+      style: `border-left-color: ${subject.color || 'var(--accent)'}`,
+      onClick: () => navigate(`${subjectId}/${chapter.id}`)
+    },
+      el('div', { class: 'ch-card-header' },
+        el('span', { class: 'ch-card-icon' }, chapter.icon || '📄'),
+        el('div', { class: 'ch-card-info' },
+          el('div', { class: 'ch-card-title' }, chapter.name),
+          el('div', { class: 'ch-card-meta' },
+            icon('layers', 14), ` ${chapter.cardCount} cartes`
+          )
+        )
+      )
     );
     chaptersSection.appendChild(card);
   }

@@ -1,4 +1,4 @@
-const KEY = 'flashy';
+const KEY = 'flashmob';
 
 const DEFAULTS = {
   prefs: {

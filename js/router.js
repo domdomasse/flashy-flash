@@ -28,8 +28,6 @@ function handleRoute() {
     route = { view: 'allcards', params: { filter: params.get('filter') || 'all', subject: params.get('subject') || '' } };
   } else if (segments.length === 1) {
     route = { view: 'subject', params: { subject: segments[0] } };
-  } else if (segments[1] === 'glossary') {
-    route = { view: 'glossary', params: { subject: segments[0] } };
   } else {
     route = {
       view: 'chapter',

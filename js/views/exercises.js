@@ -1,36 +1,13 @@
 import { getChapterData } from '../data.js';
 import { getPrefs } from '../store.js';
 import { el, onCleanup } from '../render.js';
+import { renderMarkdown } from '../utils/markdown.js';
 import { createTimer } from '../services/timer.js';
-
-function bold(text) {
-  return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-}
-
-function renderMarkdownBlock(text) {
-  const frag = document.createDocumentFragment();
-  for (const block of text.split('\n\n')) {
-    const trimmed = block.trim();
-    if (!trimmed) continue;
-    const lines = trimmed.split('\n');
-    if (lines.every(l => l.trim().startsWith('- ') || l.trim() === '')) {
-      const ul = el('ul', {});
-      for (const line of lines) {
-        const t = line.trim();
-        if (t.startsWith('- ')) ul.appendChild(el('li', { html: bold(t.slice(2)) }));
-      }
-      frag.appendChild(ul);
-    } else {
-      frag.appendChild(el('p', { html: bold(trimmed.replace(/\n/g, '<br>')) }));
-    }
-  }
-  return frag;
-}
 
 function createRevealable(label, content) {
   const contentEl = el('div', { class: 'exercise-hidden-content' });
   const textEl = el('div', { class: 'summary-text' });
-  textEl.appendChild(renderMarkdownBlock(content));
+  textEl.appendChild(renderMarkdown(content));
   contentEl.appendChild(textEl);
 
   const btn = el('button', { class: 'exercise-reveal-btn' },

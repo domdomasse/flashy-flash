@@ -1,4 +1,4 @@
-const CACHE = 'flashy';
+const CACHE = 'flashmob-v2';
 
 const PRECACHE = [
   './',
@@ -16,6 +16,7 @@ const PRECACHE = [
   './js/render.js',
   './js/data.js',
   './js/icons.js',
+  './js/utils/markdown.js',
   './js/views/home.js',
   './js/views/subject.js',
   './js/views/chapter.js',
@@ -25,7 +26,7 @@ const PRECACHE = [
   './js/views/summary.js',
   './js/views/exercises.js',
   './js/views/search.js',
-  './js/views/glossary.js',
+  './js/views/glossary-tab.js',
   './js/views/settings.js',
   './js/services/spaced.js',
   './js/services/timer.js',
@@ -35,7 +36,8 @@ const PRECACHE = [
   './data/geo/chine/cards.json',
   './data/geo/chine/summary.json',
   './data/geo/chine/exercises.json',
-  './data/geo/chine/cours.json'
+  './data/geo/chine/cours.json',
+  './data/geo/chine/glossary.json'
 ];
 
 // Install: pre-cache all files
@@ -47,9 +49,13 @@ self.addEventListener('install', e => {
   );
 });
 
-// Activate: take control immediately
+// Activate: clean old caches, take control immediately
 self.addEventListener('activate', e => {
-  e.waitUntil(self.clients.claim());
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
 });
 
 // Fetch: stale-while-revalidate

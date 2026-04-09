@@ -7,7 +7,7 @@ export async function renderHome(container) {
   const catalog = await getCatalog();
 
   const topbar = el('div', { class: 'topbar' },
-    el('h1', {}, '⚡ Flashy Flash'),
+    el('h1', {}, '⚡ Flashmob'),
     el('button', { class: 'btn-icon', onClick: () => navigate('settings'), 'aria-label': 'Réglages' }, icon('settings', 22))
   );
 

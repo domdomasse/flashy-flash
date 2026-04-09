@@ -13,6 +13,7 @@ html {
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
   font-size: calc(16px * var(--font-scale, 1));
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -78,8 +79,18 @@ html { scroll-behavior: smooth; }
     background: var(--surface2);
   }
 
+  /* Ban bar */
+  .cardlist-banbar:hover {
+    width: 18px;
+    background: var(--bad);
+  }
+  .cardlist-banbar.banned:hover {
+    width: 18px;
+    background: var(--accent);
+  }
+
   /* Cards: border highlight + elevation */
-  .chapter-card:hover,
+  .ch-card:hover,
   .subject-card:hover,
   .search-result-card:hover,
   .cardlist-card:hover,
@@ -89,8 +100,8 @@ html { scroll-behavior: smooth; }
   }
 
   /* Action buttons: scale + brightness */
-  .chapter-revise-btn:hover {
-    transform: scale(1.05);
+  .ch-action-btn:hover {
+    transform: scale(1.03);
     filter: brightness(1.15);
   }
 
@@ -100,10 +111,21 @@ html { scroll-behavior: smooth; }
     transform: scale(1.03);
   }
 
-  /* Filter buttons */
+  /* Badge clicks */
+  .fc-badge.clickable:hover { filter: brightness(1.2); }
+
+  /* Sort buttons (allcards) */
   .fc-filter-btn:hover:not(.active) {
     border-color: var(--accent);
-    color: var(--text);
+    color: var(--accent);
+  }
+
+  /* Filter items */
+  .fc-filter-item:hover:not(.active) {
+    background: var(--surface2);
+  }
+  .fc-filter-trigger:hover {
+    border-color: var(--accent);
   }
 
   /* TOC items: background */
@@ -111,14 +133,34 @@ html { scroll-behavior: smooth; }
   .cours-toc-sub:hover { background: var(--surface2); }
   .cours-toc-toggle:hover { background: var(--surface2); }
 
-  /* Glossary source link */
-  .glossary-source:hover { color: var(--accent); }
+  /* Glossary letter buttons */
+  .glossary-letter-btn:hover:not(.dimmed) {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  /* Glossary search focus */
+  .glossary-search:hover { border-color: var(--accent); }
 
   /* List toggle */
   .fc-list-toggle:hover:not(.active) {
     border-color: var(--accent);
     color: var(--accent);
   }
+
+  /* Focus exit */
+  .fc-focus-exit:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Skip button */
+  .fc-skip:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Answer zones */
+  .fc-zone.bad:hover { background: rgba(244,63,94,.15); }
+  .fc-zone.good:hover { background: rgba(34,197,94,.15); }
+
+  /* Bottom nav */
+  .bottom-nav-btn:hover:not(.active) { color: var(--text-secondary); }
 
   /* Back to top */
   .back-to-top:hover { filter: brightness(1.15); }

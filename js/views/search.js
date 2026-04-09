@@ -1,13 +1,7 @@
-import { getCatalog } from '../data.js';
+import { getCatalog, getChapterData } from '../data.js';
 import { el, onCleanup } from '../render.js';
 import { navigate } from '../router.js';
 import { icon } from '../icons.js';
-
-const DEF_PATTERNS = [
-  /^d[ée]finir\s/i,
-  /^que?\s+(signifie|sont?|est-ce qu[e'])/i,
-  /^qu['']est-ce qu[e']/i,
-];
 
 export async function renderSearch(container, { q }) {
   const catalog = await getCatalog();
@@ -39,38 +33,25 @@ export async function renderSearch(container, { q }) {
       // Add chapter
       searchItems.push({
         type: 'chapter',
-        subject, chapter,
         label: chapter.name,
         sublabel: `${subject.icon} ${subject.name}`,
         searchText: (chapter.name + ' ' + subject.name).toLowerCase(),
         route: `${subject.id}/${chapter.id}/cours`
       });
 
-      // Add glossary terms from cards
-      try {
-        const res = await fetch(`data/${subject.id}/${chapter.id}/cards.json`);
-        if (!res.ok) continue;
-        const data = await res.json();
-        for (const card of data.cards) {
-          const isDef = DEF_PATTERNS.some(p => p.test(card.q));
-          if (!isDef) continue;
-          let term = card.q
-            .replace(/^(D[ée]finir|Que signifie|Qu['']est-ce que?|Qu['']est-ce qu[''])\s*/i, '')
-            .replace(/[?.!]+$/, '')
-            .replace(/^(un[e]?|l[ea]s?|l['']|d['']|des)\s*/i, '')
-            .trim();
-          term = term.charAt(0).toUpperCase() + term.slice(1);
-
+      // Add glossary terms from glossary.json
+      const glossary = await getChapterData(subject.id, chapter.id, 'glossary');
+      if (glossary?.terms) {
+        for (const entry of glossary.terms) {
           searchItems.push({
             type: 'glossary',
-            subject, chapter,
-            label: term,
-            sublabel: card.a.replace(/<[^>]+>/g, '').slice(0, 80) + '…',
-            searchText: (term + ' ' + card.a.replace(/<[^>]+>/g, '')).toLowerCase(),
-            route: `${subject.id}/glossary`
+            label: entry.term,
+            sublabel: entry.def.slice(0, 80) + (entry.def.length > 80 ? '…' : ''),
+            searchText: (entry.term + ' ' + entry.def).toLowerCase(),
+            route: `${subject.id}/${chapter.id}/glossary`
           });
         }
-      } catch { /* skip */ }
+      }
     }
   }
 
@@ -95,7 +76,6 @@ export async function renderSearch(container, { q }) {
       return;
     }
 
-    // Group by type
     const chapters = matches.filter(m => m.type === 'chapter');
     const glossary = matches.filter(m => m.type === 'glossary');
 

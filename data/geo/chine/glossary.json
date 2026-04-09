@@ -1,0 +1,184 @@
+{
+  "terms": [
+    {
+      "term": "Soft power",
+      "def": "Puissance d'influence fondée sur la culture, l'économie et le rayonnement international, par opposition au hard power militaire."
+    },
+    {
+      "term": "Hard power",
+      "def": "Puissance fondée sur la force militaire et la coercition, par opposition au soft power culturel et économique."
+    },
+    {
+      "term": "Recomposition",
+      "def": "Réorganisation d'un espace géographique dans la durée, sous l'effet de facteurs intérieurs ou extérieurs."
+    },
+    {
+      "term": "Émergence",
+      "def": "Processus par lequel un pays en développement connaît une croissance économique rapide et s'intègre progressivement dans l'économie mondiale."
+    },
+    {
+      "term": "IDE",
+      "def": "Investissements Directs Étrangers : capitaux investis par des entreprises ou des États étrangers dans un pays."
+    },
+    {
+      "term": "IDH",
+      "def": "Indice de Développement Humain : mesure le niveau de santé, de richesse et d'éducation d'une population. Varie de 0 (faible) à 1 (élevé)."
+    },
+    {
+      "term": "Indice de Gini",
+      "def": "Indicateur mesurant les inégalités de revenus dans un pays. Plus il est élevé, plus les inégalités sont fortes. En Chine : 29 en 1980 → 39 en 2019."
+    },
+    {
+      "term": "PIB",
+      "def": "Produit Intérieur Brut : valeur totale des biens et services produits dans un pays sur une année. Indicateur de richesse économique."
+    },
+    {
+      "term": "Exode rural",
+      "def": "Migration massive des populations rurales vers les villes, souvent motivée par la recherche d'emploi et de meilleures conditions de vie."
+    },
+    {
+      "term": "Fragmentation socio-spatiale",
+      "def": "Perte d'homogénéité sociale dans l'espace urbain : coexistence de quartiers très riches et très pauvres, pouvant aller jusqu'à la ségrégation."
+    },
+    {
+      "term": "Étalement urbain",
+      "def": "Extension géographique d'une ville vers ses périphéries, au détriment des espaces ruraux et agricoles environnants."
+    },
+    {
+      "term": "Métropole",
+      "def": "Ville très peuplée assurant des fonctions de commandement politique, économique et culturel à différentes échelles (régionale, nationale, mondiale)."
+    },
+    {
+      "term": "Métropolisation",
+      "def": "Processus de concentration des activités et des fonctions de commandement dans un nombre limité de grandes villes, de plus en plus intégrées à la mondialisation."
+    },
+    {
+      "term": "Transition urbaine",
+      "def": "Passage d'une population majoritairement rurale à une population majoritairement urbaine."
+    },
+    {
+      "term": "Transition démographique",
+      "def": "Passage d'un régime de forte natalité et mortalité à un régime de faible natalité et mortalité, accompagnant le développement économique."
+    },
+    {
+      "term": "Urbanisation",
+      "def": "Augmentation de la population vivant en ville, ainsi que du nombre et de la taille des villes."
+    },
+    {
+      "term": "Littoralisation",
+      "def": "Concentration des populations et des activités économiques sur les côtes, favorisée par le commerce maritime mondialisé."
+    },
+    {
+      "term": "Edge city",
+      "def": "Ville-relais en périphérie d'une métropole, offrant emplois, services, loisirs et culture. Aussi appelée « ville-relais ». Ex : Pudong et Nanqiao près de Shanghai."
+    },
+    {
+      "term": "Mitage",
+      "def": "Phénomène par lequel la ville grignote progressivement les espaces ruraux et agricoles à sa périphérie."
+    },
+    {
+      "term": "CBD",
+      "def": "Central Business District : quartier des affaires d'une métropole, pôle financier. Ex : Lujiazui à Shanghai, Manhattan à New York, La Défense à Paris."
+    },
+    {
+      "term": "Conurbation",
+      "def": "Ensemble urbain formé par la fusion de plusieurs aires urbaines distinctes dont les périphéries se chevauchent."
+    },
+    {
+      "term": "Mégalopole",
+      "def": "Regroupement de plusieurs métropoles de rang mondial, interconnectées par des axes de communication et des activités économiques, formant un réseau urbain de premier plan. Ex : Boston–Washington, Shanghai–Hong Kong."
+    },
+    {
+      "term": "Ville-monde",
+      "def": "Métropole qui rayonne à l'échelle mondiale sur tous les plans, très bien connectée à l'espace mondial, avec une population cosmopolite."
+    },
+    {
+      "term": "Marketing territorial",
+      "def": "Stratégie d'une ville ou d'un territoire pour renforcer son attractivité et se distinguer de ses concurrents. Ex : accueillir les Jeux Olympiques."
+    },
+    {
+      "term": "Économie du savoir",
+      "def": "Activité reposant sur un niveau de connaissance élevé, un budget R&D important et des employés très qualifiés maîtrisant la haute technologie."
+    },
+    {
+      "term": "Archipel métropolitain mondial",
+      "def": "Réseau des métropoles mondiales d'Asie de l'Est, d'Amérique du Nord et d'Europe occidentale, connectées entre elles et dominant l'économie mondiale."
+    },
+    {
+      "term": "Verticalisation",
+      "def": "Densification des métropoles qui entraîne une croissance en hauteur du bâti (gratte-ciels), liée au manque d'espace et au coût du foncier."
+    },
+    {
+      "term": "Polycentrisme",
+      "def": "Organisation d'un espace urbain autour de plusieurs centres (CBD, pôles universitaires, culturels, industriels), par opposition à un modèle monocentrique."
+    },
+    {
+      "term": "Espace de relégation",
+      "def": "Espace peu attractif dans lequel des populations résident sans l'avoir choisi, pour des raisons économiques et géographiques. Ex : quartiers informels, bidonvilles."
+    },
+    {
+      "term": "Gated community",
+      "def": "Communauté résidentielle fermée et sécurisée, réservée aux populations aisées, avec résidences de luxe, espaces verts et services privés. Ex : Villas Yosemite près de Pékin."
+    },
+    {
+      "term": "Gentrification",
+      "def": "Transformation d'un quartier populaire en quartier aisé, entraînant l'exclusion progressive des catégories sociales modestes par la hausse des prix."
+    },
+    {
+      "term": "ZIP",
+      "def": "Zone Industrialo-Portuaire : espace logistique combinant activités industrielles et infrastructures portuaires (quais, stockage). Ex : port de Shanghai."
+    },
+    {
+      "term": "EVP",
+      "def": "Équivalent Vingt Pieds : unité de mesure du trafic maritime correspondant à un conteneur standard. Le port de Shanghai traite 36 500 M d'EVP par an."
+    },
+    {
+      "term": "Nouvelle Route de la Soie",
+      "def": "Projet chinois d'axe routier et ferroviaire reliant la Chine à l'Europe via l'Asie centrale, visant à développer l'Ouest chinois et réduire la dépendance maritime."
+    },
+    {
+      "term": "Go West",
+      "def": "Politique chinoise visant à développer la Chine intérieure et de l'Ouest pour réduire les inégalités territoriales, en recomposant l'espace d'Est en Ouest."
+    },
+    {
+      "term": "Agriculture intensive",
+      "def": "Agriculture concentrant de nombreuses semences ou têtes de bétail par hectare, visant le rendement maximum. Modèle productiviste tourné vers l'exportation."
+    },
+    {
+      "term": "Agriculture extensive",
+      "def": "Agriculture à faible concentration par hectare, avec un rendement moindre que le modèle productiviste. Peut être commerciale et mondialisée. Ex : ranching."
+    },
+    {
+      "term": "Filière agro-alimentaire",
+      "def": "Ensemble des moyens et acteurs des différentes étapes de production d'un produit alimentaire, « de la fourche du paysan à la fourchette du consommateur »."
+    },
+    {
+      "term": "Ranching",
+      "def": "Élevage bovin extensif en plein air, très rentable et reconnu pour sa qualité. Pratiqué en Amérique latine et en Amérique du Nord."
+    },
+    {
+      "term": "Plan quinquennal",
+      "def": "Programme économique de 5 ans défini par le Parti communiste chinois, fixant les objectifs de production agricole, industrielle et de développement."
+    },
+    {
+      "term": "Sécurité alimentaire",
+      "def": "Capacité d'un pays à garantir l'accès de sa population à une alimentation suffisante, saine et régulière. Enjeu central pour les 1,4 milliard de Chinois."
+    },
+    {
+      "term": "Terres rares",
+      "def": "Minéraux stratégiques (cuivre, métaux précieux) indispensables à l'industrie de haute technologie. Concentrées au nord de la Chine."
+    },
+    {
+      "term": "Stress hydrique",
+      "def": "Situation où la demande en eau dépasse les ressources disponibles, aggravée par l'industrie lourde et la déforestation. Touche le nord de la Chine."
+    },
+    {
+      "term": "Synergie",
+      "def": "Collaboration productive entre universités, laboratoires de recherche et entreprises, au cœur de l'économie du savoir et de l'innovation métropolitaine."
+    },
+    {
+      "term": "Mondialisation",
+      "def": "Processus d'intégration économique, culturelle et politique à l'échelle mondiale, caractérisé par l'intensification des échanges de biens, capitaux et personnes."
+    }
+  ]
+}

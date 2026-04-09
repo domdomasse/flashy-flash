@@ -108,12 +108,18 @@ export function activateScrollIndicator(container, prefix) {
 
   function collectHeadings() {
     headings = [];
-    const allH = container.querySelectorAll(`h2[id^="${prefix}"], h3[id^="${prefix}"]`);
+    const allH = [...container.querySelectorAll(`h2[id^="${prefix}"], h3[id^="${prefix}"]`)];
     let lastParent = '';
-    for (const h of allH) {
+    for (let i = 0; i < allH.length; i++) {
+      const h = allH[i];
       if (h.tagName === 'H2') {
         lastParent = h.textContent;
-        // Skip h2 — only subsections (h3) are shown in the indicator
+        // Include h2 if it has no h3 following (standalone section like Introduction)
+        const next = allH[i + 1];
+        if (!next || next.tagName === 'H2') {
+          headings.push({ el: h, text: h.textContent, parent: '' });
+        }
+        // Skip h2 that have subsections — their h3 children will show instead
       } else {
         const match = lastParent.match(/^([IVX]+)\s*[–—-]/);
         const parentLabel = match ? match[1] : '';

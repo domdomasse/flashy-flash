@@ -1,48 +1,28 @@
-import { getCatalog } from '../data.js';
-
-const DEF_PATTERNS = [
-  /^d[ée]finir\s/i,
-  /^que?\s+(signifie|sont?|est-ce qu[e'])/i,
-  /^qu['']est-ce qu[e']/i,
-];
-
-let glossaryCache = null;
+let glossaryCache = {};
 
 /**
- * Load glossary entries for a given subject.
- * Returns Map<lowercase term, { term, answer }>.
+ * Load glossary entries for a given subject + chapter.
+ * Returns Map<lowercase term, { term, def }>.
  */
-export async function loadGlossary(subjectId) {
-  if (glossaryCache) return glossaryCache;
-
-  const catalog = await getCatalog();
-  const subject = catalog.subjects.find(s => s.id === subjectId);
-  if (!subject) return new Map();
+export async function loadGlossary(subjectId, chapterId) {
+  const key = `${subjectId}/${chapterId}`;
+  if (glossaryCache[key]) return glossaryCache[key];
 
   const entries = new Map();
 
-  for (const chapter of subject.chapters) {
-    try {
-      const res = await fetch(`data/${subjectId}/${chapter.id}/cards.json`);
-      if (!res.ok) continue;
+  try {
+    const res = await fetch(`data/${subjectId}/${chapterId}/glossary.json`);
+    if (res.ok) {
       const data = await res.json();
-      for (const card of data.cards) {
-        const isDef = DEF_PATTERNS.some(p => p.test(card.q));
-        if (!isDef) continue;
-        let term = card.q
-          .replace(/^(D[ée]finir|Que signifie|Qu['']est-ce que?|Qu['']est-ce qu[''])\s*/i, '')
-          .replace(/[?.!]+$/, '')
-          .replace(/^(un[e]?|l[ea]s?|l['']|d['']|des)\s*/i, '')
-          .trim();
-        term = term.charAt(0).toUpperCase() + term.slice(1);
-        if (term.length >= 3) {
-          entries.set(term.toLowerCase(), { term, answer: card.a });
+      for (const t of data.terms) {
+        if (t.term.length >= 3) {
+          entries.set(t.term.toLowerCase(), { term: t.term, def: t.def });
         }
       }
-    } catch { /* skip */ }
-  }
+    }
+  } catch { /* skip */ }
 
-  glossaryCache = entries;
+  glossaryCache[key] = entries;
   return entries;
 }
 
@@ -99,8 +79,10 @@ function processTextNodes(element, regex, glossary) {
       span.className = 'glossary-link';
       span.textContent = match[0];
       span.dataset.term = entry.term;
-      span.dataset.def = entry.answer;
+      span.dataset.def = entry.def;
       span.addEventListener('click', showTooltip);
+      span.addEventListener('mouseenter', showTooltip);
+      span.addEventListener('mouseleave', dismissTooltip);
       fragment.appendChild(span);
 
       lastIndex = regex.lastIndex;
