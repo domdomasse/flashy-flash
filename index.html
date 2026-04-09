@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Flashcards – La Chine</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0f172a;
+  --surface:   #1e293b;
+  --surface2:  #273549;
+  --accent:    #38bdf8;
+  --accent2:   #818cf8;
+  --good:      #22c55e;
+  --bad:       #f43f5e;
+  --text:      #e2e8f0;
+  --text-muted:#94a3b8;
+  --radius:    16px;
+  --shadow:    0 8px 32px rgba(0,0,0,0.45);
+}
+
+html { overflow-x: hidden; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* HEADER */
+header {
+  width: 100%;
+  max-width: 780px;
+  padding: 20px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--accent);
+}
+#stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+#score-badges { display: flex; gap: 8px; }
+.badge {
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.badge.good { background: rgba(34,197,94,.15); color: var(--good); border: 1px solid var(--good); }
+.badge.bad  { background: rgba(244,63,94,.15);  color: var(--bad);  border: 1px solid var(--bad); }
+
+/* PROGRESS BAR */
+#progress-bar-wrap {
+  background: var(--surface2);
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+}
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* FILTER BAR */
+#filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.filter-btn {
+  background: var(--surface2);
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+  transition: all 0.2s;
+}
+.filter-btn.active {
+  background: var(--accent);
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* MAIN */
+main {
+  width: 100%;
+  max-width: 780px;
+  padding: 20px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* CARD */
+#card-container {
+  width: 100%;
+  -webkit-perspective: 1200px;
+  perspective: 1200px;
+}
+.card {
+  width: 100%;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.card-inner {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-transition: -webkit-transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  border-radius: var(--radius);
+}
+.card.flipped .card-inner {
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+.card-front,
+.card-back {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  min-height: 280px;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 48px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.card-front {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid rgba(56,189,248,.15);
+  -webkit-transform: rotateY(0deg);
+  transform: rotateY(0deg);
+}
+.card-back {
+  background: linear-gradient(135deg, #1a2d45 0%, #162035 100%);
+  border: 1px solid rgba(129,140,248,.25);
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+.category-tag {
+  position: absolute;
+  top: 14px; left: 14px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(56,189,248,.12);
+  color: var(--accent);
+  border: 1px solid rgba(56,189,248,.3);
+}
+#question-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--text);
+  max-width: 600px;
+  word-break: break-word;
+}
+#answer-text {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text);
+  max-width: 600px;
+  word-break: break-word;
+}
+#answer-text strong { color: var(--accent); }
+.hint {
+  position: absolute;
+  bottom: 12px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+/* SWIPE HINT */
+#swipe-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-align: center;
+  opacity: 0.7;
+  margin-top: -8px;
+}
+
+/* ACTION BUTTONS */
+#action-buttons {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  justify-content: center;
+}
+#action-buttons.hidden { display: none; }
+.action-btn {
+  flex: 1;
+  max-width: 200px;
+  min-height: 52px;
+  padding: 14px 0;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: opacity 0.15s;
+}
+.action-btn:active { opacity: 0.75; }
+.action-btn.bad  { background: rgba(244,63,94,.18);  color: var(--bad);  border: 1px solid var(--bad); }
+.action-btn.good { background: rgba(34,197,94,.18); color: var(--good); border: 1px solid var(--good); }
+
+/* NAV BUTTONS */
+#nav-buttons { display: flex; gap: 12px; }
+#nav-buttons button {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--text-muted);
+  min-height: 48px;
+  padding: 10px 28px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s;
+}
+#nav-buttons button:active:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--accent);
+}
+#nav-buttons button:disabled { opacity: 0.3; cursor: default; }
+
+/* END SCREEN */
+#end-screen {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 40px 20px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid rgba(56,189,248,.15);
+  box-shadow: var(--shadow);
+  width: 100%;
+}
+#end-screen.hidden { display: none; }
+#end-screen h2 { font-size: 1.8rem; }
+#end-stats { color: var(--text-muted); font-size: 1rem; line-height: 1.7; }
+#end-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+#end-actions button {
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: opacity 0.2s;
+}
+#end-actions button:active { opacity: 0.8; }
+#btn-restart-all { background: var(--accent);  color: #0f172a; }
+#btn-restart-bad  { background: var(--accent2); color: #0f172a; }
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+  header h1      { font-size: 1.05rem; }
+  #question-text { font-size: 1rem; }
+  #answer-text   { font-size: 0.9rem; }
+  .card-front, .card-back { padding: 46px 18px 36px; min-height: 260px; }
+  .card-inner    { min-height: 260px; }
+}
+@supports (padding: max(0px)) {
+  main { padding-bottom: max(60px, env(safe-area-inset-bottom, 60px)); }
+}
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>🗺️ La Chine : recompositions spatiales</h1>
+    <div id="stats">
+      <span id="progress-text">Carte 1 / 100</span>
+      <div id="score-badges">
+        <span class="badge good">✓ <span id="count-good">0</span></span>
+        <span class="badge bad" >✗ <span id="count-bad">0</span></span>
+      </div>
+    </div>
+    <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+    <div id="filter-bar">
+      <button class="filter-btn active" data-filter="all">Toutes</button>
+      <button class="filter-btn" data-filter="intro">Intro &amp; Contexte</button>
+      <button class="filter-btn" data-filter="3chines">Les 3 Chine</button>
+      <button class="filter-btn" data-filter="inegalites">Inégalités</button>
+      <button class="filter-btn" data-filter="metropoles">Métropoles</button>
+      <button class="filter-btn" data-filter="rural">Espaces ruraux</button>
+      <button class="filter-btn" data-filter="ressources">Ressources</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="card-container">
+      <div id="flashcard" class="card">
+        <div class="card-inner">
+          <div class="card-front">
+            <span class="category-tag" id="category-tag"></span>
+            <p id="question-text"></p>
+            <span class="hint">Appuyer pour révéler</span>
+          </div>
+          <div class="card-back">
+            <p id="answer-text"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p id="swipe-hint">◀ swipe pour naviguer &nbsp;·&nbsp; tap pour retourner ▶</p>
+
+    <div id="action-buttons" class="hidden">
+      <button id="btn-bad"  class="action-btn bad" >✗ À revoir</button>
+      <button id="btn-good" class="action-btn good">✓ Je savais</button>
+    </div>
+
+    <div id="nav-buttons">
+      <button id="btn-prev" disabled>◀ Précédente</button>
+      <button id="btn-next">Suivante ▶</button>
+    </div>
+
+    <div id="end-screen" class="hidden">
+      <h2>🎉 Session terminée !</h2>
+      <p id="end-stats"></p>
+      <div id="end-actions">
+        <button id="btn-restart-all">🔄 Recommencer tout</button>
+        <button id="btn-restart-bad">🔁 Revoir les ratées</button>
+      </div>
+    </div>
+  </main>
+
+<script>
+const ALL_CARDS = [
+  // ── Intro & Contexte ──
+  { cat:"intro", q:"Quel est le rang de la Chine dans l'économie mondiale ?", a:"<strong>2e puissance économique mondiale.</strong>" },
+  { cat:"intro", q:"Quelle est la superficie de la Chine et son rang mondial ?", a:"<strong>9 600 000 km²</strong> → 4e État le plus grand du monde." },
+  { cat:"intro", q:"Quelle est la population de la Chine et son rang mondial ?", a:"<strong>1,4 milliard d'habitants</strong> → pays le plus peuplé du monde." },
+  { cat:"intro", q:"Quand l'histoire de la Chine aurait-elle débuté et avec quelle dynastie ?", a:"Vers <strong>2100 av. J.-C.</strong> avec la <strong>dynastie Xia</strong> (empire mythique, non prouvé)." },
+  { cat:"intro", q:"En quelle année et par qui la Chine a-t-elle été découpée en provinces pour la première fois ?", a:"<strong>210 av. J.-C.</strong> avec la <strong>dynastie Qin</strong>." },
+  { cat:"intro", q:"Que se passe-t-il au XIXe siècle lors des guerres de l'opium ?", a:"Défaite des Chinois par les Occidentaux → <strong>ouverture de la Chine aux commerces occidentaux</strong>." },
+  { cat:"intro", q:"En quelle année Mao Zedong s'impose-t-il définitivement ?", a:"<strong>1949</strong>." },
+  { cat:"intro", q:"Quel programme Deng Xiaoping lance-t-il en 1978 ?", a:"Le programme <strong>« réforme et ouverture »</strong> → ouverture économique de la Chine au monde." },
+  { cat:"intro", q:"Quel a été le taux de croissance économique de la Chine de 1978 à 2014 ?", a:"<strong>9,5 % par an</strong>, faisant de la Chine <strong>« l'atelier du monde »</strong>." },
+  { cat:"intro", q:"En quelle année l'économie chinoise dépasse-t-elle l'économie japonaise ?", a:"<strong>2010.</strong>" },
+  { cat:"intro", q:"La Chine est-elle plutôt un soft power ou un hard power ? Pourquoi ?", a:"La Chine est un <strong>soft power</strong> (culture + économie) ≠ hard power (puissance militaire seule)." },
+  { cat:"intro", q:"Qu'est-ce que la « recomposition » d'un espace géographique ?", a:"<strong>Réorganisation d'un espace dans la durée</strong> sous l'effet de plusieurs facteurs intérieurs et/ou extérieurs." },
+  { cat:"intro", q:"Quelle est la problématique du cours sur la Chine ?", a:"Quelles <strong>recompositions géographiques</strong> accompagnent la croissance économique de la Chine dans le cadre de la mondialisation ?" },
+  { cat:"intro", q:"Sur quels axes de transport la Chine cherche-t-elle à s'imposer aujourd'hui ?", a:"Les <strong>nouvelles Routes de la Soie</strong> et la <strong>mer de Chine</strong> (qu'elle revendique face au Japon)." },
+  { cat:"intro", q:"Pourquoi Taiwan est-il un sujet de tension géopolitique ?", a:"Les Chinois <strong>revendiquent Taiwan</strong> et n'approuvent pas son indépendance." },
+  { cat:"intro", q:"Quelles sont les caractéristiques politiques négatives souvent associées à la Chine ?", a:"Répressions, corruption, modèle très peu soucieux de l'environnement." },
+
+  // ── Les 3 Chine ──
+  { cat:"3chines", q:"En combien de grandes zones géographiques le territoire chinois se divise-t-il ?", a:"<strong>3 zones</strong> : la Chine littorale, la Chine intérieure, la Chine de l'Ouest." },
+  { cat:"3chines", q:"Quelle part du PIB la Chine littorale représente-t-elle ?", a:"<strong>58 % du PIB</strong>." },
+  { cat:"3chines", q:"Quelle est la concentration des IDE en Chine littorale ?", a:"<strong>Plus de 80 %</strong> des Investissements Directs Étrangers." },
+  { cat:"3chines", q:"Que signifie IDE ?", a:"<strong>Investissements Directs Étrangers.</strong>" },
+  { cat:"3chines", q:"Que signifie IDH et que mesure-t-il ?", a:"<strong>Indice de Développement Humain</strong> : mesure la santé, la richesse et l'éducation." },
+  { cat:"3chines", q:"Quelle est la part de population et du PIB de la Chine intérieure ?", a:"<strong>49 %</strong> de la population, <strong>34 %</strong> du PIB. Exemple : Chengdu." },
+  { cat:"3chines", q:"Quelle est la Chine de l'Ouest en termes de développement ?", a:"La plus vaste, la moins peuplée, la moins développée. IDH ≈ 0,7. Économie agricole (coton). Province du Xinjiang avec Urumqi." },
+  { cat:"3chines", q:"Quelle est la part du secteur des services, de l'industrie et de l'agriculture dans le PIB chinois ?", a:"<strong>Services : 55 %</strong> — Industrie : 37 % — Agriculture : 7 %." },
+  { cat:"3chines", q:"Quelle est la principale caractéristique de la Chine littorale en termes d'IDH ?", a:"C'est la région avec les <strong>IDH les plus forts</strong> de Chine." },
+  { cat:"3chines", q:"Quel est l'IDH de Hong-Kong et celui du Tibet ?", a:"Hong-Kong : <strong>IDH 0,9</strong> — Tibet : <strong>IDH 0,6</strong>." },
+  { cat:"3chines", q:"Pourquoi la Chine littorale est-elle la plus dense malgré sa petite superficie ?", a:"C'est là que se concentrent population, activités économiques, richesse et IDE. Elle est très aménagée pour le transport portuaire." },
+  { cat:"3chines", q:"Qu'est-ce que la politique « Go West » ?", a:"Politique chinoise visant à <strong>recomposer l'espace d'Est en Ouest</strong> : développer la Chine intérieure et l'Ouest pour réduire les inégalités." },
+  { cat:"3chines", q:"Pourquoi la Chine de l'Ouest est-elle restée longtemps en marge ?", a:"Situation <strong>ultra-périphérique</strong> : distance et présence du désert du <strong>Takla Makan</strong>." },
+  { cat:"3chines", q:"Quel rôle futur pourrait jouer Urumqi selon le cours ?", a:"Devenir un <strong>centre, un pôle régional majeur d'Asie centrale</strong>." },
+  { cat:"3chines", q:"Qu'est-ce que la nouvelle Route de la Soie ?", a:"Un <strong>axe routier et ferroviaire</strong> reliant la Chine à l'Occident via l'Asie centrale." },
+  { cat:"3chines", q:"Quels sont les 3 objectifs de la Chine avec la nouvelle Route de la Soie ?", a:"1. Accélérer le développement intérieur/Ouest<br>2. Ne plus dépendre des routes maritimes<br>3. Garantir l'accès aux ressources et dominer les voisins asiatiques." },
+  { cat:"3chines", q:"Quelles sont les limites de la nouvelle Route de la Soie ?", a:"Coûts élevés, coopération difficile avec les pays voisins, infrastructures très coûteuses, dépendance maritime persistante." },
+
+  // ── Inégalités ──
+  { cat:"inegalites", q:"Quel était le PIB de la Chine en 2023 et quelle part des richesses mondiales représente-t-il ?", a:"<strong>20 000 milliards de dollars</strong>, soit <strong>18 %</strong> des richesses mondiales." },
+  { cat:"inegalites", q:"Quelle était la valeur de l'IDH chinois en 1975 ?", a:"<strong>0,5</strong> en 1975." },
+  { cat:"inegalites", q:"Qu'est-ce que l'indice de Gini et comment a-t-il évolué en Chine ?", a:"Mesure des inégalités : <strong>29 en 1980</strong> → <strong>39 en 2019</strong> → les inégalités augmentent." },
+  { cat:"inegalites", q:"Quelle part de la richesse l'élite urbaine détient-elle en Chine ?", a:"<strong>44 % de la richesse</strong> pour seulement <strong>1 % de la population</strong>." },
+  { cat:"inegalites", q:"Le nombre de personnes disposant de plus de 13 M€ a évolué comment en 10 ans en Chine ?", a:"Il a été <strong>multiplié par 12 en 10 ans</strong>." },
+  { cat:"inegalites", q:"Quel phénomène les inégalités urbain/rural favorisent-elles ?", a:"<strong>L'exode rural</strong> : les pop. rurales s'installent en ville, parfois dans des quartiers informels ou bidonvilles." },
+  { cat:"inegalites", q:"Quelles sont les conséquences de l'exode rural sur l'espace ?", a:"Fragmentation socio-spatiale, quartiers informels/bidonvilles, <strong>étalement urbain</strong>, précarisation des pop. rurales restantes." },
+  { cat:"inegalites", q:"Quelle politique le gouvernement chinois a-t-il menée dans les années 80-90 pour réduire les inégalités ?", a:"Développement des villes et activités économiques en <strong>Chine intérieure et de l'Ouest</strong>, construction d'axes de communication." },
+  { cat:"inegalites", q:"De combien le PIB de certaines provinces intérieures a-t-il augmenté entre 2007 et 2017 ?", a:"<strong>x 4</strong>. Ex : Hubei (7-10 Md$) et Guizhou (4-7 Md$)." },
+
+  // ── Métropoles ──
+  { cat:"metropoles", q:"Définir une métropole.", a:"Ville très peuplée assurant des <strong>fonctions de commandement</strong> politique, économique, culturel à différentes échelles." },
+  { cat:"metropoles", q:"Définir la métropolisation.", a:"Processus de <strong>concentration des activités et des fonctions de commandement</strong> dans un nombre limité de grandes villes mondialisées." },
+  { cat:"metropoles", q:"Définir la transition urbaine.", a:"<strong>Passage d'une population rurale à une population urbaine.</strong>" },
+  { cat:"metropoles", q:"Quand a eu lieu la politique de l'enfant unique en Chine ?", a:"<strong>1979 – 2015.</strong>" },
+  { cat:"metropoles", q:"Quelle part de la population chinoise vit en ville ?", a:"<strong>Plus de 70 %.</strong>" },
+  { cat:"metropoles", q:"De combien la population chinoise a-t-elle diminué en 2023 ?", a:"De <strong>plus de 2 millions d'habitants</strong>." },
+  { cat:"metropoles", q:"Depuis quelle année la croissance démographique chinoise diminue-t-elle ?", a:"Depuis <strong>2022.</strong>" },
+  { cat:"metropoles", q:"Qu'est-ce qui nourrit la métropolisation chinoise ?", a:"L'<strong>exode rural</strong> (migration rapide de la pop. rurale vers les villes)." },
+  { cat:"metropoles", q:"Quelle est la population et la superficie de Chongqing ?", a:"<strong>32 M d'habitants</strong> sur <strong>84 000 km²</strong>." },
+  { cat:"metropoles", q:"Quelle est la population de l'aire urbaine de Shanghai ?", a:"<strong>≈ 28 millions d'habitants.</strong>" },
+  { cat:"metropoles", q:"Qu'est-ce que les « Edge cities » ?", a:"Villes-relais / <strong>Nouveaux centres</strong> en périphérie d'une métropole, offrant emplois, services, loisirs, cultures." },
+  { cat:"metropoles", q:"Qu'est-ce que le « mitage » ?", a:"La ville <strong>grignote</strong> les espaces ruraux et agricoles à sa périphérie." },
+  { cat:"metropoles", q:"Quel est le CBD de Shanghai et quelle est sa fonction principale ?", a:"<strong>Lujiazui</strong> → pôle financier (comparable à Manhattan, la Défense)." },
+  { cat:"metropoles", q:"Quel est le district universitaire de Shanghai et quelles universités y trouve-t-on ?", a:"District de <strong>Yangpu</strong> avec Fudan et Tongji." },
+  { cat:"metropoles", q:"Quel est le quartier culturel et touristique de Shanghai ?", a:"<strong>Huangpou.</strong>" },
+  { cat:"metropoles", q:"Que signifie ZIP dans le contexte portuaire ?", a:"<strong>Zone Industrialo-Portuaire.</strong>" },
+  { cat:"metropoles", q:"Quel est le rang du port de Shanghai et quel est son trafic ?", a:"<strong>1er port du monde</strong> : <strong>36 500 M d'EVP par an.</strong>" },
+  { cat:"metropoles", q:"Que signifie EVP ?", a:"<strong>Équivalent Vingt Pieds</strong> : unité de mesure correspondant à 1 conteneur." },
+  { cat:"metropoles", q:"Quels sont les 3 facteurs d'implantation de Tesla à Shanghai ?", a:"1. Main d'œuvre abondante et compétitive<br>2. Site disponible en périphérie<br>3. Proximité du <strong>littoral</strong> pour le transport." },
+  { cat:"metropoles", q:"Définir une conurbation.", a:"Des <strong>aires urbaines différentes qui fusionnent</strong> par chevauchement." },
+  { cat:"metropoles", q:"Définir une mégalopole.", a:"Regroupement de plusieurs métropoles de rang mondial, interconnectées, formant un <strong>réseau urbain de premier plan à échelle mondiale.</strong>" },
+  { cat:"metropoles", q:"Citer un exemple de mégalopole aux États-Unis.", a:"De <strong>Boston à Washington</strong> sur la côte Est américaine." },
+  { cat:"metropoles", q:"Quelle mégalopole est en formation en Chine ?", a:"De <strong>Shanghai à Hong Kong</strong> sur la Chine littorale." },
+  { cat:"metropoles", q:"Quels sont les 2 critères d'une mégalopole ?", a:"1. Regroupement de métropoles très peuplées, dynamiques et attractives.<br>2. Liées par axes de communication nombreux et activités économiques interconnectées générant de fortes mobilités." },
+  { cat:"metropoles", q:"En 2007, combien de km de lignes à grande vitesse la Chine avait-elle ?", a:"<strong>700 km</strong> de LGV en 2007." },
+  { cat:"metropoles", q:"Combien de km de LGV la Chine possède-t-elle en 2025 ?", a:"<strong>30 000 km</strong> → la plus grande du monde (Pékin – Canton – Shenzhen – Hong-Kong)." },
+  { cat:"metropoles", q:"En 2018, combien de personnes l'aéroport de Shanghai a-t-il accueillis ?", a:"<strong>74 millions</strong> (2x plus que les années 2000) : investisseurs, migrants, touristes." },
+  { cat:"metropoles", q:"Qu'est-ce qu'une « ville-monde » ?", a:"Métropole qui rayonne à l'<strong>échelle mondiale</strong> sur tous les plans, très bien connectée à l'espace mondial, avec une pop. cosmopolite." },
+  { cat:"metropoles", q:"Selon quels critères les métropoles mondiales sont-elles hiérarchisées ?", a:"Activité économique/financière (bourse), R&D, accessibilité, activités culturelles, qualité de vie." },
+  { cat:"metropoles", q:"Qu'est-ce que le marketing territorial ?", a:"Stratégie d'une ville pour <strong>renforcer son attractivité</strong> et se distinguer (ex : organiser les JO)." },
+  { cat:"metropoles", q:"Qu'est-ce qu'un starchitecte ?", a:"Grande entreprise qui construit des <strong>architectures emblématiques</strong> (ex : Tour Eiffel 312m, Kingdom Tower Djeddah 465m)." },
+  { cat:"metropoles", q:"Qu'est-ce que « l'économie du savoir » ?", a:"Activité reposant sur un niveau de connaissance élevé, budget R&D important, employés très qualifiés maîtrisant la haute technologie." },
+  { cat:"metropoles", q:"Qu'est-ce que l'archipel métropolitain mondial ?", a:"Réseau des <strong>métropoles mondiales</strong> d'Asie de l'Est (Japon), d'Amérique du Nord et d'Europe occidentale." },
+  { cat:"metropoles", q:"Quels sont les 3 enjeux pour la Chine à intégrer l'archipel métropolitain mondial ?", a:"1. Capter l'essentiel des flux mondiaux<br>2. Augmenter le rayonnement mondial de ses métropoles<br>3. Renforcer sa puissance géopolitique." },
+  { cat:"metropoles", q:"Quelle hiérarchie illustre les différentes échelles des métropoles chinoises ?", a:"<strong>Urumqi < Pékin < Shanghai</strong> (régionale → nationale → mondiale)." },
+  { cat:"metropoles", q:"Quels flux les métropoles polarisent-elles ?", a:"Flux <strong>financiers</strong> (€, $, ¥), flux de <strong>marchandises</strong>, flux de <strong>personnes</strong>." },
+  { cat:"metropoles", q:"Qu'est-ce que la verticalisation dans les métropoles ?", a:"Densification des métropoles qui entraîne une croissance en hauteur (gratte-ciels)." },
+  { cat:"metropoles", q:"Définir un espace de relégation.", a:"Espace peu attractif dans lequel des populations y résident <strong>sans y choisir</strong> pour des raisons économiques et géographiques." },
+  { cat:"metropoles", q:"Définir une gated community.", a:"Communauté <strong>fermée et sécurisée</strong> : résidence de luxe, espaces verts, eaux privées. Ex : Canal Bank et Villas Yosemite (périphérie de Pékin)." },
+  { cat:"metropoles", q:"Quelle part de la population urbaine chinoise vit dans des quartiers informels ?", a:"Entre <strong>17 et 30 %</strong> de la pop. urbaine." },
+  { cat:"metropoles", q:"Qu'est-ce que la gentrification ?", a:"Processus de transformation d'un quartier populaire en quartier riche avec <strong>exclusion des catégories sociales modestes.</strong>" },
+  { cat:"metropoles", q:"Quelle différence existe-t-il entre les villes américaines et européennes concernant les inégalités socio-spatiales ?", a:"USA : <strong>périphéries plus riches que les centres</strong>. Europe : <strong>inverse</strong> (centres plus riches)." },
+  { cat:"metropoles", q:"Pourquoi trouve-t-on des bidonvilles à Urumqi malgré la croissance ?", a:"<strong>Croissance démographique très forte</strong> → bidonville à côté même d'un CBD." },
+  { cat:"metropoles", q:"Quels types d'emplois la métropolisation génère-t-elle structurellement ?", a:"Des emplois <strong>très qualifiés</strong> (finance, R&D) ET des emplois <strong>peu qualifiés</strong> (livraison, entretien, sécurité, transport)." },
+
+  // ── Espaces ruraux ──
+  { cat:"rural", q:"Depuis quelle année plus de 50 % de la pop mondiale vit-elle en ville ?", a:"Depuis <strong>2007.</strong>" },
+  { cat:"rural", q:"Combien d'humains vivront en ville en 2050 ?", a:"<strong>6,5 milliards</strong> (contre seulement 5 M dans les espaces ruraux)." },
+  { cat:"rural", q:"Quelle est la superficie totale des espaces agricoles mondiaux ?", a:"<strong>4,9 milliards d'hectares.</strong>" },
+  { cat:"rural", q:"Combien d'agriculteurs/éleveurs dans le monde ?", a:"<strong>1,3 milliard.</strong>" },
+  { cat:"rural", q:"Quelle part de la population active chinoise travaille dans l'agriculture ?", a:"<strong>Plus de 20 %</strong> de la pop. active." },
+  { cat:"rural", q:"Quelle équation résume le développement selon le cours ?", a:"<strong>Développement = transition démo = transition éco = transition urbaine</strong> (et simultanément)." },
+  { cat:"rural", q:"Comment les espaces ruraux sont-ils perçus dans l'espace des représentations mentales ?", a:"Stables, immobiles, vieux, traditionnels, archaïques, dépassés → espaces <strong>repoussoirs</strong> tournés vers le passé." },
+  { cat:"rural", q:"Quelle est la stratégie des espaces ruraux face à la mondialisation ?", a:"Demeurer compétitifs en <strong>s'intégrant à la mondialisation</strong>, non contre les villes mais à côté d'elles." },
+  { cat:"rural", q:"Définir l'agriculture intensive.", a:"Concentration de nombreuses semailles/têtes de bétail par hectare. Modèle <strong>productiviste</strong>, cherche le rendement maximum." },
+  { cat:"rural", q:"Définir l'agriculture extensive.", a:"Concentration par hectare <strong>très inférieure</strong> au modèle productiviste. Rendement moins important. Ex : Ranching en Amérique latine." },
+  { cat:"rural", q:"Qu'est-ce qu'une filière agro-alimentaire ?", a:"Ensemble des moyens et acteurs des ≠ étapes de production d'un produit alimentaire : <strong>« de la fourchette du paysan à la fourchette du consommateur ».</strong>" },
+  { cat:"rural", q:"Combien d'êtres humains l'agriculture intensive nourrit-elle ?", a:"<strong>8 milliards</strong> d'êtres humains." },
+  { cat:"rural", q:"Qu'est-ce que le Ranching ?", a:"Élevage bovin <strong>extensif en plein air</strong>, très rentable. Pratiqué en Amérique latine (Brésil) et Amérique du Nord." },
+  { cat:"rural", q:"Quel est le type d'agriculture dominant en Chine ?", a:"Agriculture <strong>modeste, intensive mais irriguée</strong> : riziculture, céréales, et élevage extensif nomade." },
+  { cat:"rural", q:"Quelles cultures trouve-t-on en Chine de l'Est et centrale ?", a:"Blé, riz, millet, pomme de terre, coton, soja, thé." },
+  { cat:"rural", q:"Quel type d'élevage est présent en Chine de l'Ouest ?", a:"<strong>Élevage extensif nomade.</strong>" },
+  { cat:"rural", q:"Sur quoi repose le plan quinquénal chinois pour l'agriculture ?", a:"Sécurité alimentaire, réduction de la pauvreté, développement rural, croissance nationale, infrastructures, production de machines agricoles." },
+  { cat:"rural", q:"Quel exemple symbolise l'élevage intensif extrême en Chine ?", a:"Ferme-usine de <strong>Wuhan : 650 000 porcs sur 20 étages.</strong>" },
+  { cat:"rural", q:"Quelle technologie la Chine utilise-t-elle pour ses récoltes de céréales ?", a:"<strong>Moissonneuses-batteuses dirigées par l'IA.</strong>" },
+  { cat:"rural", q:"Comment la Chine garantit-elle ses besoins en produits agricoles qu'elle ne produit pas ?", a:"Investissements dans des productions du monde entier : vignobles français, soja et viande d'<strong>Argentine et du Brésil.</strong>" },
+  { cat:"rural", q:"Quel est l'enjeu central du plan quinquénal pour l'agriculture chinoise ?", a:"La <strong>sécurité alimentaire</strong> pour 1,4 milliard d'habitants + développement des espaces ruraux." },
+
+  // ── Ressources ──
+  { cat:"ressources", q:"Quelles ressources naturelles la Chine possède-t-elle ?", a:"Énergies fossiles (<strong>charbon, pétrole, gaz</strong>) + minéraux + <strong>terres rares</strong> (cuivre, métaux précieux)." },
+  { cat:"ressources", q:"Où se concentrent les terres rares en Chine ?", a:"Au <strong>Nord de la Chine.</strong>" },
+  { cat:"ressources", q:"Pourquoi la répartition inégale des ressources est-elle importante géographiquement ?", a:"Elle implique une <strong>spécialisation régionale industrielle</strong>." },
+  { cat:"ressources", q:"La Chine exploite-t-elle aussi des ressources en mer ?", a:"Oui : notamment le <strong>pétrole off-shore.</strong>" },
+  { cat:"ressources", q:"Quelle région est connue pour son industrie lourde en Chine intérieure ?", a:"Le bassin du <strong>Sichuan</strong> (charbon, gaz naturel)." },
+  { cat:"ressources", q:"Quel fleuve est marqué par la construction de nombreux barrages ?", a:"Le <strong>fleuve Yangtsé.</strong>" },
+  { cat:"ressources", q:"Quel district minier est connu pour sa forte pollution ?", a:"Le district de <strong>Bayon Obo</strong> au Nord de Pékin." },
+  { cat:"ressources", q:"Quelles sont les conséquences environnementales de l'exploitation des ressources en Chine ?", a:"Pollution de l'air (particules fines), contamination sols et cours d'eau, <strong>déforestation</strong>, érosion des sols, stress hydrique au Nord." },
+  { cat:"ressources", q:"Quelles sont les 3 grandes parties du plan sur les ressources ruraux chinois ?", a:"I – Des espaces ruraux riches en ressources<br>II – L'exploitation et la répartition des ressources<br>III – Des risques environnementaux et sanitaires à gérer." },
+  { cat:"ressources", q:"Pourquoi la région du Sichuan consomme-t-elle une grande quantité d'eau ?", a:"À cause de son <strong>industrie lourde intensive</strong> qui nécessite beaucoup d'eau." }
+];
+
+const CAT_LABELS = {
+  intro:"Intro & Contexte", "3chines":"Les 3 Chine",
+  inegalites:"Inégalités", metropoles:"Métropoles",
+  rural:"Espaces ruraux", ressources:"Ressources"
+};
+
+// ── State ──
+let deck=[], currentIdx=0, isFlipped=false, goodList=[], badList=[], activeFilter="all";
+
+// ── DOM ──
+const flashcard     = document.getElementById("flashcard");
+const questionText  = document.getElementById("question-text");
+const answerText    = document.getElementById("answer-text");
+const categoryTag   = document.getElementById("category-tag");
+const progressText  = document.getElementById("progress-text");
+const progressBar   = document.getElementById("progress-bar");
+const countGood     = document.getElementById("count-good");
+const countBad      = document.getElementById("count-bad");
+const actionButtons = document.getElementById("action-buttons");
+const btnGood       = document.getElementById("btn-good");
+const btnBad        = document.getElementById("btn-bad");
+const btnPrev       = document.getElementById("btn-prev");
+const btnNext       = document.getElementById("btn-next");
+const endScreen     = document.getElementById("end-screen");
+const endStats      = document.getElementById("end-stats");
+const btnRestartAll = document.getElementById("btn-restart-all");
+const btnRestartBad = document.getElementById("btn-restart-bad");
+const filterBtns    = document.querySelectorAll(".filter-btn");
+
+// ── Utils ──
+function shuffle(arr) {
+  for (let i=arr.length-1; i>0; i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// ── Render ──
+function renderCard() {
+  if (currentIdx >= deck.length) { showEndScreen(); return; }
+  const card = deck[currentIdx];
+  questionText.textContent = card.q;
+  answerText.innerHTML     = card.a;
+  categoryTag.textContent  = CAT_LABELS[card.cat] || card.cat;
+  isFlipped = false;
+  flashcard.classList.remove("flipped");
+  actionButtons.classList.add("hidden");
+  progressText.textContent = "Carte "+(currentIdx+1)+" / "+deck.length;
+  progressBar.style.width  = (currentIdx/deck.length*100)+"%";
+  btnPrev.disabled = currentIdx===0;
+  btnNext.disabled = false;
+  countGood.textContent = goodList.length;
+  countBad.textContent  = badList.length;
+}
+
+function showEndScreen() {
+  document.getElementById("card-container").style.display="none";
+  actionButtons.style.display="none";
+  document.getElementById("nav-buttons").style.display="none";
+  endScreen.classList.remove("hidden");
+  const total=goodList.length+badList.length;
+  const pct=total?Math.round(goodList.length/total*100):0;
+  endStats.innerHTML="<strong>"+goodList.length+"</strong> réponses correctes sur <strong>"+total+"</strong> évaluées ("+pct+" %)<br><strong>"+badList.length+"</strong> carte(s) à revoir";
+  btnRestartBad.disabled=badList.length===0;
+  progressBar.style.width="100%";
+}
+
+function initDeck(cards) {
+  deck=shuffle([...cards]); currentIdx=0; goodList=[]; badList=[];
+  countGood.textContent=0; countBad.textContent=0;
+  document.getElementById("card-container").style.display="";
+  actionButtons.style.display="";
+  actionButtons.classList.add("hidden");
+  document.getElementById("nav-buttons").style.display="";
+  endScreen.classList.add("hidden");
+  renderCard();
+}
+
+function getFiltered() {
+  return activeFilter==="all" ? ALL_CARDS : ALL_CARDS.filter(c=>c.cat===activeFilter);
+}
+
+// ── Actions ──
+function flipCard() {
+  isFlipped=!isFlipped;
+  flashcard.classList.toggle("flipped",isFlipped);
+  actionButtons.classList.toggle("hidden",!isFlipped);
+}
+function goNext() {
+  if (currentIdx<deck.length-1){currentIdx++;renderCard();}
+  else if(currentIdx===deck.length-1){currentIdx++;showEndScreen();}
+}
+function goPrev() { if(currentIdx>0){currentIdx--;renderCard();} }
+
+// ── Swipe / Tap (touch) ──
+let tX=0, tY=0;
+flashcard.addEventListener("touchstart",e=>{
+  tX=e.changedTouches[0].clientX;
+  tY=e.changedTouches[0].clientY;
+},{passive:true});
+
+flashcard.addEventListener("touchend",e=>{
+  const dx=e.changedTouches[0].clientX-tX;
+  const dy=e.changedTouches[0].clientY-tY;
+  const ax=Math.abs(dx), ay=Math.abs(dy);
+  if(ax<10&&ay<10){ flipCard(); }
+  else if(ax>50&&ax>ay){ dx<0?goNext():goPrev(); }
+},{passive:true});
+
+// Clic souris (desktop uniquement)
+flashcard.addEventListener("click",e=>{
+  if(e.sourceCapabilities&&e.sourceCapabilities.firesTouchEvents) return;
+  flipCard();
+});
+
+// ── Boutons ──
+btnGood.addEventListener("click",()=>{ goodList.push(deck[currentIdx]); currentIdx++; renderCard(); });
+btnBad.addEventListener("click", ()=>{ badList.push(deck[currentIdx]);  currentIdx++; renderCard(); });
+btnNext.addEventListener("click", goNext);
+btnPrev.addEventListener("click", goPrev);
+btnRestartAll.addEventListener("click",()=>initDeck(getFiltered()));
+btnRestartBad.addEventListener("click",()=>{ if(badList.length>0) initDeck([...badList]); });
+
+filterBtns.forEach(btn=>btn.addEventListener("click",()=>{
+  filterBtns.forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  activeFilter=btn.dataset.filter;
+  initDeck(getFiltered());
+}));
+
+// ── Clavier (desktop) ──
+document.addEventListener("keydown",e=>{
+  if(!endScreen.classList.contains("hidden")) return;
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();flipCard();}
+  if(e.key==="ArrowRight") goNext();
+  if(e.key==="ArrowLeft")  goPrev();
+  if((e.key==="g"||e.key==="G")&&isFlipped) btnGood.click();
+  if((e.key==="b"||e.key==="B")&&isFlipped) btnBad.click();
+});
+
+initDeck(ALL_CARDS);
+</script>
+</body>
+</html>
