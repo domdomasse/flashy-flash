@@ -1,4 +1,4 @@
-const CACHE = 'flashy-v1';
+const CACHE = 'flashy';
 
 const PRECACHE = [
   './',
@@ -34,7 +34,7 @@ const PRECACHE = [
   './data/geo/chine/resources.json'
 ];
 
-// Install: pre-cache all static assets
+// Install: pre-cache all files
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
@@ -43,35 +43,28 @@ self.addEventListener('install', e => {
   );
 });
 
-// Activate: clean old caches
+// Activate: take control immediately
 self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-  );
+  e.waitUntil(self.clients.claim());
 });
 
-// Fetch: cache-first, fallback to network, cache new responses
+// Fetch: stale-while-revalidate
+// → Sert le cache immédiatement (rapide)
+// → Met à jour le cache en arrière-plan (frais)
+// → Au prochain chargement, l'élève a la dernière version
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
+    caches.open(CACHE).then(cache =>
+      cache.match(e.request).then(cached => {
+        const fetchPromise = fetch(e.request).then(response => {
+          if (response.ok) cache.put(e.request, response.clone());
+          return response;
+        }).catch(() => cached);
 
-      return fetch(e.request).then(response => {
-        if (response.ok && response.type === 'basic') {
-          const clone = response.clone();
-          caches.open(CACHE).then(cache => cache.put(e.request, clone));
-        }
-        return response;
-      });
-    }).catch(() => {
-      // Offline: serve index for navigation requests
-      if (e.request.mode === 'navigate') {
-        return caches.match('./index.html');
-      }
-    })
+        return cached || fetchPromise;
+      })
+    )
   );
 });
