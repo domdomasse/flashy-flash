@@ -7,6 +7,7 @@ import { renderChapter } from './views/chapter.js';
 import { renderSettings } from './views/settings.js';
 import { renderSearch } from './views/search.js';
 import { renderGlossary } from './views/glossary.js';
+import { renderAllCards } from './views/allcards.js';
 
 const views = {
   home: renderHome,
@@ -14,7 +15,8 @@ const views = {
   chapter: renderChapter,
   settings: renderSettings,
   search: renderSearch,
-  glossary: renderGlossary
+  glossary: renderGlossary,
+  allcards: renderAllCards
 };
 
 function applyPrefs() {

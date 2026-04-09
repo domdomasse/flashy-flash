@@ -3,10 +3,16 @@
    ══════════════════════════════════════ */
 
 .summary-section {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+}
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
 }
 .summary-section-title {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent);
   margin-bottom: 12px;
@@ -14,10 +20,13 @@
   border-bottom: 1px solid var(--border);
 }
 .summary-subsection {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+}
+.summary-subsection:last-child {
+  margin-bottom: 0;
 }
 .summary-subsection-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 10px;
@@ -42,6 +51,144 @@
 }
 .summary-text li::marker {
   color: var(--accent);
+}
+
+/* ══════════════════════════════════════
+   TABLE OF CONTENTS (shared Cours/Résumé)
+   ══════════════════════════════════════ */
+
+.cours-toc {
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.cours-toc-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  text-align: left;
+}
+.cours-toc-toggle::after {
+  content: '▸';
+  transition: transform 0.2s ease;
+  font-size: 0.8rem;
+}
+.cours-toc-toggle.open::after {
+  transform: rotate(90deg);
+}
+.cours-toc-content {
+  border-top: 1px solid var(--border);
+}
+.cours-toc-list {
+  padding: 0;
+}
+
+/* ── Group = 1 section + its subs ── */
+.cours-toc-group {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.cours-toc-group:last-child {
+  border-bottom: none;
+}
+
+/* Section row: chevron + label, centered vertically */
+.cours-toc-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  min-height: 32px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cours-toc-section:active {
+  background: var(--surface2);
+}
+.cours-toc-chevron {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+.cours-toc-chevron.open {
+  transform: rotate(90deg);
+}
+.cours-toc-section-label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.35;
+}
+
+/* Sub items: tight under their section, no extra gap */
+.cours-toc-subs {
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+.cours-toc-subs.collapsed {
+  display: none;
+}
+.cours-toc-sub {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 14px 0 40px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cours-toc-sub:active {
+  background: var(--surface2);
+}
+
+/* ── Back to top button ── */
+.back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 900;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #0f172a;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.back-to-top:active {
+  opacity: 0.7;
 }
 
 /* ══════════════════════════════════════
@@ -146,60 +293,6 @@
 }
 .exercise-tips li::before {
   content: '💡 ';
-}
-
-/* ══════════════════════════════════════
-   RESOURCES
-   ══════════════════════════════════════ */
-
-.resource-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 10px;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: all var(--transition);
-  text-decoration: none;
-  color: inherit;
-  min-height: var(--tap-size);
-}
-.resource-card:active { transform: scale(0.98); opacity: 0.8; }
-
-.resource-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  width: 40px;
-  text-align: center;
-}
-.resource-info {
-  flex: 1;
-  min-width: 0;
-}
-.resource-title {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 2px;
-}
-.resource-meta {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-.resource-desc {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-top: 4px;
-  line-height: 1.4;
-}
-.resource-arrow {
-  color: var(--text-muted);
-  flex-shrink: 0;
-  font-size: 1.1rem;
 }
 
 /* ══════════════════════════════════════
@@ -330,6 +423,147 @@
 }
 .glossary-source:active { color: var(--accent); }
 
+/* ── Glossary inline links (in Cours/Résumé) ── */
+.glossary-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.glossary-link:active {
+  opacity: 0.7;
+}
+
+/* ── Glossary tooltip ── */
+.glossary-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 300px;
+  min-width: 200px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  padding: 14px 16px;
+  animation: tooltip-in 0.15s ease;
+}
+.glossary-tooltip-term {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.glossary-tooltip-def {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+.glossary-tooltip-def strong { color: var(--accent); }
+@keyframes tooltip-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   CARD LIST (browse all flashcards)
+   ══════════════════════════════════════ */
+
+.cardlist-info {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.cardlist-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: opacity var(--transition);
+}
+.cardlist-card.banned {
+  opacity: 0.45;
+}
+.cardlist-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.cardlist-left {
+  flex: 1;
+  min-width: 0;
+}
+.cardlist-cat {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(56,189,248,.12);
+  color: var(--accent);
+  border: 1px solid rgba(56,189,248,.3);
+  margin-bottom: 6px;
+}
+.cardlist-q {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.45;
+}
+.cardlist-a {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+  margin: 0 14px;
+  padding-top: 10px;
+}
+.cardlist-a.hidden { display: none; }
+.cardlist-a strong { color: var(--accent); }
+.cardlist-ban {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+.cardlist-ban.active {
+  background: rgba(244,63,94,.12);
+  border-color: var(--bad);
+}
+.cardlist-ban:active { opacity: 0.7; }
+.cardlist-score {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--surface2);
+  color: var(--text-muted);
+}
+.cardlist-score.good { background: rgba(34,197,94,.15); color: var(--good); }
+.cardlist-score.bad { background: rgba(244,63,94,.15); color: var(--bad); }
+
 /* ══════════════════════════════════════
    SETTINGS BUTTONS
    ══════════════════════════════════════ */
@@ -383,4 +617,14 @@
   font-size: 0.7rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+.dashboard-stat.clickable {
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--transition);
+}
+.dashboard-stat.clickable:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+  border-color: var(--accent);
 }

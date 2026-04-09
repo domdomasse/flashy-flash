@@ -1,3 +1,5 @@
+import { refreshIcons } from './icons.js';
+
 const app = document.getElementById('app');
 const cleanups = [];
 
@@ -7,8 +9,6 @@ export function onCleanup(fn) {
 
 export async function renderView(viewFn, params) {
   while (cleanups.length) cleanups.pop()();
-  app.style.opacity = '0';
-  await new Promise(r => setTimeout(r, 100));
   app.innerHTML = '';
   try {
     await viewFn(app, params);
@@ -20,7 +20,7 @@ export async function renderView(viewFn, params) {
       el('p', { style: 'font-size:0.8rem;color:#94a3b8;margin-top:8px;' }, String(err))
     ));
   }
-  app.style.opacity = '1';
+  refreshIcons();
   window.scrollTo(0, 0);
 }
 

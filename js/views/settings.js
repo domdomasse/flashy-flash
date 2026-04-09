@@ -1,6 +1,7 @@
 import { getPrefs, setPref, exportData, importData, resetAll } from '../store.js';
 import { el } from '../render.js';
 import { navigate } from '../router.js';
+import { icon } from '../icons.js';
 
 const FONT_SIZES = [
   { value: 0.85, label: 'Petit' },
@@ -27,8 +28,8 @@ export async function renderSettings(container) {
   const prefs = getPrefs();
 
   const topbar = el('div', { class: 'topbar' },
-    el('button', { class: 'btn-back', onClick: () => navigate(''), 'aria-label': 'Retour' }, '←'),
-    el('h1', {}, '⚙️ Réglages')
+    el('button', { class: 'btn-back', onClick: () => navigate(''), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
+    el('h1', {}, 'Réglages')
   );
 
   // ── Appearance ──

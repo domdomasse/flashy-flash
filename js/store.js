@@ -74,6 +74,21 @@ export function toggleFavorite(cardId) {
   return existing.fav;
 }
 
+export function toggleBanned(cardId) {
+  load();
+  const existing = state.cards[cardId] || { score: 0, fav: false, level: 0 };
+  existing.banned = !existing.banned;
+  state.cards[cardId] = existing;
+  save();
+  return existing.banned;
+}
+
+export function isCardBanned(cardId) {
+  load();
+  const card = state.cards[cardId];
+  return card ? !!card.banned : false;
+}
+
 // ── Chapter stats ──
 
 export function getChapterStats(subjectId, chapterId) {

@@ -2,19 +2,20 @@ import { getCatalog } from '../data.js';
 import { getChapterProgress, getWeakCardsCount } from '../store.js';
 import { el } from '../render.js';
 import { navigate } from '../router.js';
+import { icon } from '../icons.js';
 
 export async function renderHome(container) {
   const catalog = await getCatalog();
 
   const topbar = el('div', { class: 'topbar' },
     el('h1', {}, '⚡ Flashy Flash'),
-    el('button', { class: 'btn-icon', onClick: () => navigate('settings'), 'aria-label': 'Réglages' }, '⚙️')
+    el('button', { class: 'btn-icon', onClick: () => navigate('settings'), 'aria-label': 'Réglages' }, icon('settings', 22))
   );
 
   // Search bar
   const searchBar = el('div', { class: 'search-bar', onClick: () => navigate('search') },
-    el('span', { class: 'search-bar-icon' }, '🔍'),
-    el('span', { class: 'search-bar-placeholder' }, 'Rechercher un terme, une notion...')
+    el('span', { class: 'search-bar-icon' }, icon('search', 18)),
+    el('span', { class: 'search-bar-placeholder' }, 'Rechercher un chapitre, un terme...')
   );
 
   // Dashboard
@@ -35,48 +36,45 @@ export async function renderHome(container) {
     subjectStats.push({ subject, mastered: subMastered, total: subTotal, weak: subWeak });
   }
 
-  const globalPct = totalCards > 0 ? Math.round(totalMastered / totalCards * 100) : 0;
-
   const dashboard = el('div', { class: 'section' },
     el('div', { class: 'section-title' }, 'Progression')
   );
 
-  // Global card
-  const globalCard = el('div', { class: 'dashboard-card' },
-    el('div', { class: 'title' }, 'Maîtrise globale'),
-    el('div', { class: 'value' }, totalCards > 0 ? `${globalPct}%` : 'Pas encore commencé'),
-    el('div', { class: 'progress-bar' },
-      el('div', { class: 'fill', style: `width: ${globalPct}%` })
-    )
-  );
-  dashboard.appendChild(globalCard);
-
-  // Per-subject stats
   if (totalCards > 0) {
     const statsRow = el('div', { class: 'dashboard-stats-row' });
-    statsRow.appendChild(el('div', { class: 'dashboard-stat' },
+    statsRow.appendChild(el('div', {
+      class: 'dashboard-stat clickable',
+      onClick: () => navigate('allcards?filter=mastered')
+    },
       el('div', { class: 'dashboard-stat-value' }, String(totalMastered)),
       el('div', { class: 'dashboard-stat-label' }, 'Maîtrisées')
     ));
-    statsRow.appendChild(el('div', { class: 'dashboard-stat' },
+    statsRow.appendChild(el('div', {
+      class: 'dashboard-stat clickable',
+      onClick: () => navigate('allcards?filter=weak')
+    },
       el('div', { class: 'dashboard-stat-value' }, String(totalWeak)),
       el('div', { class: 'dashboard-stat-label' }, 'À revoir')
     ));
-    statsRow.appendChild(el('div', { class: 'dashboard-stat' },
+    statsRow.appendChild(el('div', {
+      class: 'dashboard-stat clickable',
+      onClick: () => navigate('allcards?filter=all')
+    },
       el('div', { class: 'dashboard-stat-value' }, String(totalCards)),
       el('div', { class: 'dashboard-stat-label' }, 'Total')
     ));
     dashboard.appendChild(statsRow);
+  } else {
+    dashboard.appendChild(el('div', { class: 'placeholder', style: 'padding:24px' },
+      el('p', {}, 'Pas encore commencé')
+    ));
   }
 
   // Subjects grid
   const grid = el('div', { class: 'subject-grid' });
   for (const { subject, mastered, total } of subjectStats) {
     const count = subject.chapters.length;
-    const pct = total > 0 ? Math.round(mastered / total * 100) : 0;
-    const meta = total > 0
-      ? `${count} chap. · ${pct}% maîtrisé`
-      : `${count} chapitre${count > 1 ? 's' : ''}`;
+    const meta = `${count} chapitre${count > 1 ? 's' : ''}`;
 
     grid.appendChild(
       el('div', { class: 'subject-card', onClick: () => navigate(subject.id) },

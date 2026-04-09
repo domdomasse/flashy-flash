@@ -1,23 +1,24 @@
 import { getSubject } from '../data.js';
 import { el, showToast } from '../render.js';
 import { navigate } from '../router.js';
+import { icon } from '../icons.js';
 import { renderFlashcardsTab } from './flashcards.js';
 import { renderSummaryTab } from './summary.js';
 import { renderExercisesTab } from './exercises.js';
-import { renderResourcesTab } from './resources.js';
+import { renderCoursTab } from './cours.js';
 
 const TABS = [
-  { id: 'summary', label: 'Résumé', icon: '📝' },
-  { id: 'flashcards', label: 'Flashcards', icon: '🃏' },
-  { id: 'exercises', label: 'Exercices', icon: '✏️' },
-  { id: 'resources', label: 'Ressources', icon: '🔗' }
+  { id: 'cours', label: 'Cours', iconName: 'book-open' },
+  { id: 'summary', label: 'Résumé', iconName: 'file-text' },
+  { id: 'flashcards', label: 'Flashcards', iconName: 'layers' },
+  { id: 'exercises', label: 'Exercices', iconName: 'pencil' }
 ];
 
 const TAB_RENDERERS = {
+  cours: renderCoursTab,
   summary: renderSummaryTab,
   flashcards: renderFlashcardsTab,
-  exercises: renderExercisesTab,
-  resources: renderResourcesTab
+  exercises: renderExercisesTab
 };
 
 export async function renderChapter(container, { subject: subjectId, chapter: chapterId, tab }) {
@@ -38,20 +39,19 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   }
 
   const topbar = el('div', { class: 'topbar' },
-    el('button', { class: 'btn-back', onClick: () => navigate(subjectId), 'aria-label': 'Retour' }, '←'),
+    el('button', { class: 'btn-back', onClick: () => navigate(subjectId), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
     el('h1', {}, chapter.name),
-    el('button', { class: 'btn-icon', onClick: shareChapter, 'aria-label': 'Partager' }, '📤')
+    el('button', { class: 'btn-icon', onClick: shareChapter, 'aria-label': 'Partager' }, icon('share-2', 20))
   );
 
   // Tab bar
   const tabBar = el('div', { class: 'tab-bar' });
   for (const t of TABS) {
-    tabBar.appendChild(
-      el('button', {
-        class: t.id === tab ? 'active' : '',
-        onClick: () => navigate(`${subjectId}/${chapterId}/${t.id}`)
-      }, `${t.icon} ${t.label}`)
-    );
+    const btn = el('button', {
+      class: t.id === tab ? 'active' : '',
+      onClick: () => navigate(`${subjectId}/${chapterId}/${t.id}`)
+    }, icon(t.iconName, 16), ' ' + t.label);
+    tabBar.appendChild(btn);
   }
 
   const content = el('div', { class: 'tab-content' });

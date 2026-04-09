@@ -3,6 +3,7 @@ import { el } from '../render.js';
 import { loadGlossary, attachGlossaryTooltips } from '../services/glossary-tooltips.js';
 import { buildToc, slugify, buildBackToTop } from '../services/toc.js';
 
+// Mini markdown parser
 function renderMarkdown(text) {
   const blocks = text.split('\n\n');
   const container = document.createDocumentFragment();
@@ -37,22 +38,22 @@ function bold(text) {
   return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 }
 
-export async function renderSummaryTab(container, subjectId, chapterId) {
-  const data = await getChapterData(subjectId, chapterId, 'summary');
+export async function renderCoursTab(container, subjectId, chapterId) {
+  const data = await getChapterData(subjectId, chapterId, 'cours');
   if (!data) {
     container.appendChild(el('div', { class: 'placeholder' },
-      el('div', { class: 'icon' }, '📝'),
-      el('p', {}, 'Résumé non disponible.')
+      el('div', { class: 'icon' }, '📖'),
+      el('p', {}, 'Cours non disponible.')
     ));
     return;
   }
 
   // Table of contents
-  container.appendChild(buildToc(container, data.sections, 's-'));
+  container.appendChild(buildToc(container, data.sections, 'c-'));
 
   // Sections
   for (const section of data.sections) {
-    const sectionSlug = 's-' + slugify(section.title);
+    const sectionSlug = 'c-' + slugify(section.title);
     const sectionEl = el('div', { class: 'summary-section summary-card' });
 
     sectionEl.appendChild(el('h2', { class: 'summary-section-title', id: sectionSlug }, section.title));
@@ -65,7 +66,7 @@ export async function renderSummaryTab(container, subjectId, chapterId) {
 
     if (section.subsections) {
       for (const sub of section.subsections) {
-        const subSlug = 's-' + slugify(section.title + ' ' + sub.title);
+        const subSlug = 'c-' + slugify(section.title + ' ' + sub.title);
         const subEl = el('div', { class: 'summary-subsection' });
         subEl.appendChild(el('h3', { class: 'summary-subsection-title', id: subSlug }, sub.title));
         const textEl = el('div', { class: 'summary-text' });

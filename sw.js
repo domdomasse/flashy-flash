@@ -15,23 +15,27 @@ const PRECACHE = [
   './js/store.js',
   './js/render.js',
   './js/data.js',
+  './js/icons.js',
   './js/views/home.js',
   './js/views/subject.js',
   './js/views/chapter.js',
   './js/views/flashcards.js',
+  './js/views/allcards.js',
+  './js/views/cours.js',
   './js/views/summary.js',
   './js/views/exercises.js',
-  './js/views/resources.js',
   './js/views/search.js',
   './js/views/glossary.js',
   './js/views/settings.js',
   './js/services/spaced.js',
   './js/services/timer.js',
+  './js/services/glossary-tooltips.js',
+  './js/services/toc.js',
   './data/index.json',
   './data/geo/chine/cards.json',
   './data/geo/chine/summary.json',
   './data/geo/chine/exercises.json',
-  './data/geo/chine/resources.json'
+  './data/geo/chine/cours.json'
 ];
 
 // Install: pre-cache all files

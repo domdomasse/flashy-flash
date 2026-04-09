@@ -12,11 +12,11 @@
 html {
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
+  font-size: calc(16px * var(--font-scale, 1));
 }
 
 body {
   font-family: var(--font);
-  font-size: calc(1rem * var(--font-scale, 1));
   line-height: 1.5;
   background: var(--bg);
   color: var(--text);
@@ -37,6 +37,14 @@ button { font-family: inherit; font-size: inherit; }
 }
 
 html { scroll-behavior: smooth; }
+
+/* ── Lucide icons ── */
+[data-lucide] {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
 
 /* ── Toast notification ── */
 #toast {

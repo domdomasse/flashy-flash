@@ -24,6 +24,8 @@ function handleRoute() {
     route = { view: 'settings', params: {} };
   } else if (segments[0] === 'search') {
     route = { view: 'search', params: { q: params.get('q') || '' } };
+  } else if (segments[0] === 'allcards') {
+    route = { view: 'allcards', params: { filter: params.get('filter') || 'all' } };
   } else if (segments.length === 1) {
     route = { view: 'subject', params: { subject: segments[0] } };
   } else if (segments[1] === 'glossary') {
@@ -34,7 +36,7 @@ function handleRoute() {
       params: {
         subject: segments[0],
         chapter: segments[1],
-        tab: segments[2] || 'summary'
+        tab: segments[2] || 'cours'
       }
     };
   }

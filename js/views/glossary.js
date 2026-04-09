@@ -1,6 +1,7 @@
 import { getSubject } from '../data.js';
 import { el } from '../render.js';
 import { navigate } from '../router.js';
+import { icon } from '../icons.js';
 
 const DEF_PATTERNS = [
   /^d[ée]finir\s/i,
@@ -13,8 +14,8 @@ export async function renderGlossary(container, { subject: subjectId }) {
   if (!subject) { navigate(''); return; }
 
   const topbar = el('div', { class: 'topbar' },
-    el('button', { class: 'btn-back', onClick: () => navigate(subjectId), 'aria-label': 'Retour' }, '←'),
-    el('h1', {}, `📖 Glossaire — ${subject.name}`)
+    el('button', { class: 'btn-back', onClick: () => navigate(subjectId), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
+    el('h1', {}, `Glossaire — ${subject.name}`)
   );
 
   const view = el('div', { class: 'view' });
