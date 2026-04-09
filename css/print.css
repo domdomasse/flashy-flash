@@ -1,4 +1,21 @@
 @media print {
-  body { background: white; color: black; }
-  .topbar, .tab-bar, .btn-back, .btn-icon { display: none; }
+  body { background: white !important; color: black !important; }
+
+  .topbar, .tab-bar, .btn-back, .btn-icon,
+  .search-bar, .fc-nav, .fc-actions, .fc-filters,
+  .fc-swipe-hint, .fc-fav-btn, .fc-hint,
+  .timer-bar, .exercise-reveal-btn, .settings-btn-group,
+  .dashboard-stats-row { display: none !important; }
+
+  .summary-text { font-size: 11pt; line-height: 1.8; }
+  .summary-text strong { font-weight: bold; color: black; }
+  .summary-section-title { font-size: 14pt; border-bottom: 1px solid #ccc; }
+  .summary-subsection-title { font-size: 12pt; }
+
+  .exercise-card { break-inside: avoid; border: 1px solid #ccc; page-break-inside: avoid; }
+  .exercise-hidden-content { display: block !important; }
+
+  .fc-card-container { display: none; }
+
+  a[href]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #666; }
 }

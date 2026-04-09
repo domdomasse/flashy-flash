@@ -1,4 +1,4 @@
-import { getPrefs, setPref } from '../store.js';
+import { getPrefs, setPref, exportData, importData, resetAll } from '../store.js';
 import { el } from '../render.js';
 import { navigate } from '../router.js';
 
@@ -9,6 +9,20 @@ const FONT_SIZES = [
   { value: 1.3, label: 'Très grand' }
 ];
 
+function createToggle(label, sublabel, checked, onChange) {
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.checked = checked;
+  input.addEventListener('change', () => onChange(input.checked));
+  return el('div', { class: 'toggle-row' },
+    el('div', {},
+      el('div', { class: 'label' }, label),
+      el('div', { class: 'sublabel' }, sublabel)
+    ),
+    el('label', { class: 'toggle' }, input, el('span', { class: 'slider' }))
+  );
+}
+
 export async function renderSettings(container) {
   const prefs = getPrefs();
 
@@ -17,89 +31,100 @@ export async function renderSettings(container) {
     el('h1', {}, '⚙️ Réglages')
   );
 
-  // ── Theme toggle ──
-  const themeInput = document.createElement('input');
-  themeInput.type = 'checkbox';
-  themeInput.checked = prefs.theme === 'light';
-  themeInput.addEventListener('change', () => {
-    setPref('theme', themeInput.checked ? 'light' : 'dark');
-    window.__applyPrefs();
-  });
-
-  const themeRow = el('div', { class: 'toggle-row' },
-    el('div', {},
-      el('div', { class: 'label' }, 'Mode clair'),
-      el('div', { class: 'sublabel' }, "Changer l'apparence du site")
-    ),
-    el('label', { class: 'toggle' }, themeInput, el('span', { class: 'slider' }))
+  // ── Appearance ──
+  const themeToggle = createToggle('Mode clair', "Changer l'apparence du site",
+    prefs.theme === 'light',
+    (checked) => { setPref('theme', checked ? 'light' : 'dark'); window.__applyPrefs(); }
   );
 
-  // ── Font size ──
   let fontIdx = FONT_SIZES.findIndex(f => f.value === prefs.fontSize);
   if (fontIdx === -1) fontIdx = 1;
   const fontLabel = el('span', { class: 'value' }, FONT_SIZES[fontIdx].label);
-
   const updateFont = (delta) => {
     fontIdx = Math.max(0, Math.min(FONT_SIZES.length - 1, fontIdx + delta));
     fontLabel.textContent = FONT_SIZES[fontIdx].label;
     setPref('fontSize', FONT_SIZES[fontIdx].value);
     window.__applyPrefs();
   };
-
   const fontRow = el('div', { class: 'toggle-row' },
     el('div', {},
       el('div', { class: 'label' }, 'Taille du texte'),
       el('div', { class: 'sublabel' }, "Ajuster la taille de l'affichage")
     ),
     el('div', { class: 'font-size-control' },
-      el('button', { onClick: () => updateFont(-1), 'aria-label': 'Réduire' }, 'A-'),
+      el('button', { onClick: () => updateFont(-1) }, 'A-'),
       fontLabel,
-      el('button', { onClick: () => updateFont(1), 'aria-label': 'Agrandir' }, 'A+')
+      el('button', { onClick: () => updateFont(1) }, 'A+')
     )
   );
 
-  // ── Spaced repetition toggle ──
-  const spacedInput = document.createElement('input');
-  spacedInput.type = 'checkbox';
-  spacedInput.checked = prefs.spacedRepetition;
-  spacedInput.addEventListener('change', () => setPref('spacedRepetition', spacedInput.checked));
-
-  const spacedRow = el('div', { class: 'toggle-row' },
-    el('div', {},
-      el('div', { class: 'label' }, 'Répétition espacée'),
-      el('div', { class: 'sublabel' }, 'Les cartes ratées reviennent plus souvent')
-    ),
-    el('label', { class: 'toggle' }, spacedInput, el('span', { class: 'slider' }))
-  );
-
-  // ── Timer toggle ──
-  const timerInput = document.createElement('input');
-  timerInput.type = 'checkbox';
-  timerInput.checked = prefs.timer;
-  timerInput.addEventListener('change', () => setPref('timer', timerInput.checked));
-
-  const timerRow = el('div', { class: 'toggle-row' },
-    el('div', {},
-      el('div', { class: 'label' }, "Chronomètre d'examen"),
-      el('div', { class: 'sublabel' }, 'Afficher un chrono sur les exercices type bac')
-    ),
-    el('label', { class: 'toggle' }, timerInput, el('span', { class: 'slider' }))
-  );
-
-  // ── Assemble ──
   const appearance = el('div', { class: 'section' },
     el('div', { class: 'section-title' }, 'Apparence'),
-    themeRow,
-    fontRow
+    themeToggle, fontRow
+  );
+
+  // ── Features ──
+  const spacedToggle = createToggle('Répétition espacée',
+    'Les cartes ratées reviennent plus souvent',
+    prefs.spacedRepetition,
+    (checked) => setPref('spacedRepetition', checked)
+  );
+  const timerToggle = createToggle("Chronomètre d'examen",
+    'Afficher un chrono sur les exercices type bac',
+    prefs.timer,
+    (checked) => setPref('timer', checked)
   );
 
   const features = el('div', { class: 'section', style: 'margin-top: 24px' },
     el('div', { class: 'section-title' }, 'Fonctionnalités'),
-    spacedRow,
-    timerRow
+    spacedToggle, timerToggle
+  );
+
+  // ── Data management ──
+  const btnExport = el('button', { class: 'settings-btn', onClick: () => {
+    const blob = new Blob([exportData()], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'flashy-flash-progression.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }}, '📥 Exporter ma progression');
+
+  const btnImport = el('button', { class: 'settings-btn', onClick: () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file'; fileInput.accept = '.json';
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (importData(reader.result)) {
+          window.__applyPrefs();
+          alert('Progression restaurée !');
+          navigate('settings'); // refresh view
+        } else {
+          alert('Fichier invalide.');
+        }
+      };
+      reader.readAsText(file);
+    });
+    fileInput.click();
+  }}, '📤 Importer une progression');
+
+  const btnResetAll = el('button', { class: 'settings-btn danger', onClick: () => {
+    if (confirm('Effacer TOUTE ta progression et tes réglages ?')) {
+      resetAll();
+      window.__applyPrefs();
+      navigate('');
+    }
+  }}, '🗑️ Tout effacer');
+
+  const dataSection = el('div', { class: 'section', style: 'margin-top: 24px' },
+    el('div', { class: 'section-title' }, 'Mes données'),
+    el('div', { class: 'settings-btn-group' }, btnExport, btnImport, btnResetAll)
   );
 
   const view = el('div', { class: 'view' });
-  view.append(topbar, appearance, features);
+  view.append(topbar, appearance, features, dataSection);
   container.appendChild(view);
 }

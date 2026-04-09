@@ -1,7 +1,10 @@
 import { getSubject } from '../data.js';
-import { el } from '../render.js';
+import { el, showToast } from '../render.js';
 import { navigate } from '../router.js';
 import { renderFlashcardsTab } from './flashcards.js';
+import { renderSummaryTab } from './summary.js';
+import { renderExercisesTab } from './exercises.js';
+import { renderResourcesTab } from './resources.js';
 
 const TABS = [
   { id: 'summary', label: 'Résumé', icon: '📝' },
@@ -10,15 +13,34 @@ const TABS = [
   { id: 'resources', label: 'Ressources', icon: '🔗' }
 ];
 
+const TAB_RENDERERS = {
+  summary: renderSummaryTab,
+  flashcards: renderFlashcardsTab,
+  exercises: renderExercisesTab,
+  resources: renderResourcesTab
+};
+
 export async function renderChapter(container, { subject: subjectId, chapter: chapterId, tab }) {
   const subject = await getSubject(subjectId);
   if (!subject) { navigate(''); return; }
   const chapter = subject.chapters.find(c => c.id === chapterId);
   if (!chapter) { navigate(subjectId); return; }
 
+  async function shareChapter() {
+    const url = window.location.href;
+    const title = `${chapter.name} — Flashy Flash`;
+    if (navigator.share) {
+      try { await navigator.share({ title, url }); } catch {}
+    } else {
+      try { await navigator.clipboard.writeText(url); showToast('Lien copié !'); }
+      catch { showToast('Impossible de copier le lien'); }
+    }
+  }
+
   const topbar = el('div', { class: 'topbar' },
     el('button', { class: 'btn-back', onClick: () => navigate(subjectId), 'aria-label': 'Retour' }, '←'),
-    el('h1', {}, chapter.name)
+    el('h1', {}, chapter.name),
+    el('button', { class: 'btn-icon', onClick: shareChapter, 'aria-label': 'Partager' }, '📤')
   );
 
   // Tab bar
@@ -32,7 +54,6 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     );
   }
 
-  // Tab content
   const content = el('div', { class: 'tab-content' });
 
   const view = el('div', { class: 'view' });
@@ -40,19 +61,14 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   container.appendChild(view);
 
   // Render active tab
-  if (tab === 'flashcards') {
-    await renderFlashcardsTab(content, subjectId, chapterId);
+  const renderer = TAB_RENDERERS[tab];
+  if (renderer) {
+    await renderer(content, subjectId, chapterId);
   } else {
-    const placeholders = {
-      summary:   { icon: '📝', text: 'Le résumé du cours arrive bientôt.' },
-      exercises: { icon: '✏️', text: 'Les exercices type bac arrivent bientôt.' },
-      resources: { icon: '🔗', text: 'Les ressources arrivent bientôt.' }
-    };
-    const ph = placeholders[tab] || placeholders.summary;
     content.appendChild(
       el('div', { class: 'placeholder' },
-        el('div', { class: 'icon' }, ph.icon),
-        el('p', {}, ph.text)
+        el('div', { class: 'icon' }, '📄'),
+        el('p', {}, 'Contenu non disponible.')
       )
     );
   }

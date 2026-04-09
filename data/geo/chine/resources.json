@@ -1,0 +1,56 @@
+{
+  "resources": [
+    {
+      "title": "La Chine, puissance mondiale — Arte",
+      "url": "https://www.youtube.com/watch?v=UmCMzTMWQs0",
+      "type": "video",
+      "duration": "52 min",
+      "description": "Documentaire Arte sur la montée en puissance de la Chine et ses transformations économiques."
+    },
+    {
+      "title": "La nouvelle Route de la Soie — Arte",
+      "url": "https://www.youtube.com/watch?v=xJHTdjCNrYU",
+      "type": "video",
+      "duration": "53 min",
+      "description": "Les enjeux géopolitiques et économiques des nouvelles Routes de la Soie."
+    },
+    {
+      "title": "Shanghai, la ville-monde — Dessous des cartes",
+      "url": "https://www.youtube.com/watch?v=i3BK-_jQFPo",
+      "type": "video",
+      "duration": "12 min",
+      "description": "Analyse géographique de Shanghai et de son rôle dans la mondialisation."
+    },
+    {
+      "title": "Fiche Eduscol — La Chine : des recompositions spatiales multiples",
+      "url": "https://eduscol.education.fr/document/23779/download",
+      "type": "article",
+      "description": "Fiche officielle du programme avec les attendus et pistes de mise en œuvre."
+    },
+    {
+      "title": "Les métropoles et la métropolisation — Lumni",
+      "url": "https://www.lumni.fr/video/la-metropolisation-un-processus-mondial-differencie",
+      "type": "video",
+      "duration": "5 min",
+      "description": "Vidéo courte expliquant le processus de métropolisation dans le monde."
+    },
+    {
+      "title": "Atlas de la Chine — Géoconfluences",
+      "url": "https://geoconfluences.ens-lyon.fr/informations-scientifiques/dossiers-regionaux/la-chine",
+      "type": "article",
+      "description": "Dossier complet avec cartes et analyses sur les dynamiques spatiales chinoises."
+    },
+    {
+      "title": "Espaces ruraux et mondialisation — Annabac",
+      "url": "https://www.annabac.com/revision-bac/les-espaces-ruraux-multifonctionnalite-ou-fragmentation",
+      "type": "article",
+      "description": "Fiche de révision sur les espaces ruraux, avec exemples et vocabulaire clé."
+    },
+    {
+      "title": "Annales Bac — Sujets de composition géographie",
+      "url": "https://www.annabac.com/annales-bac/geographie",
+      "type": "article",
+      "description": "Sujets de bac corrigés pour s'entraîner aux compositions de géographie."
+    }
+  ]
+}

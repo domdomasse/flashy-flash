@@ -5,20 +5,22 @@ import { renderHome } from './views/home.js';
 import { renderSubject } from './views/subject.js';
 import { renderChapter } from './views/chapter.js';
 import { renderSettings } from './views/settings.js';
+import { renderSearch } from './views/search.js';
+import { renderGlossary } from './views/glossary.js';
 
 const views = {
   home: renderHome,
   subject: renderSubject,
   chapter: renderChapter,
-  settings: renderSettings
+  settings: renderSettings,
+  search: renderSearch,
+  glossary: renderGlossary
 };
 
 function applyPrefs() {
   const prefs = getPrefs();
   document.documentElement.setAttribute('data-theme', prefs.theme);
   document.documentElement.style.setProperty('--font-scale', prefs.fontSize);
-
-  // Update theme-color meta for mobile browsers
   const themeColors = { dark: '#0f172a', light: '#f1f5f9' };
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', themeColors[prefs.theme] || themeColors.dark);
@@ -31,6 +33,5 @@ function onNavigate(route) {
   renderView(viewFn, route.params);
 }
 
-// Init
 applyPrefs();
 initRouter(onNavigate);

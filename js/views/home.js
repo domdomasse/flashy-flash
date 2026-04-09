@@ -1,48 +1,88 @@
 import { getCatalog } from '../data.js';
-import { getChapterProgress } from '../store.js';
+import { getChapterProgress, getWeakCardsCount } from '../store.js';
 import { el } from '../render.js';
 import { navigate } from '../router.js';
 
 export async function renderHome(container) {
   const catalog = await getCatalog();
 
-  // Topbar
   const topbar = el('div', { class: 'topbar' },
     el('h1', {}, '⚡ Flashy Flash'),
     el('button', { class: 'btn-icon', onClick: () => navigate('settings'), 'aria-label': 'Réglages' }, '⚙️')
   );
 
+  // Search bar
+  const searchBar = el('div', { class: 'search-bar', onClick: () => navigate('search') },
+    el('span', { class: 'search-bar-icon' }, '🔍'),
+    el('span', { class: 'search-bar-placeholder' }, 'Rechercher un terme, une notion...')
+  );
+
   // Dashboard
-  let totalMastered = 0, totalCards = 0;
+  let totalMastered = 0, totalCards = 0, totalWeak = 0;
+  const subjectStats = [];
+
   for (const subject of catalog.subjects) {
+    let subMastered = 0, subTotal = 0, subWeak = 0;
     for (const chapter of subject.chapters) {
       const progress = getChapterProgress(subject.id, chapter.id, chapter.cardCount);
-      totalMastered += progress.mastered;
-      totalCards += progress.total;
+      subMastered += progress.mastered;
+      subTotal += progress.total;
+      subWeak += getWeakCardsCount(subject.id, chapter.id);
     }
+    totalMastered += subMastered;
+    totalCards += subTotal;
+    totalWeak += subWeak;
+    subjectStats.push({ subject, mastered: subMastered, total: subTotal, weak: subWeak });
   }
+
   const globalPct = totalCards > 0 ? Math.round(totalMastered / totalCards * 100) : 0;
 
   const dashboard = el('div', { class: 'section' },
-    el('div', { class: 'section-title' }, 'Progression'),
-    el('div', { class: 'dashboard-card' },
-      el('div', { class: 'title' }, 'Maîtrise globale'),
-      el('div', { class: 'value' }, totalCards > 0 ? `${globalPct}%` : 'Pas encore commencé'),
-      el('div', { class: 'progress-bar' },
-        el('div', { class: 'fill', style: `width: ${globalPct}%` })
-      )
+    el('div', { class: 'section-title' }, 'Progression')
+  );
+
+  // Global card
+  const globalCard = el('div', { class: 'dashboard-card' },
+    el('div', { class: 'title' }, 'Maîtrise globale'),
+    el('div', { class: 'value' }, totalCards > 0 ? `${globalPct}%` : 'Pas encore commencé'),
+    el('div', { class: 'progress-bar' },
+      el('div', { class: 'fill', style: `width: ${globalPct}%` })
     )
   );
+  dashboard.appendChild(globalCard);
+
+  // Per-subject stats
+  if (totalCards > 0) {
+    const statsRow = el('div', { class: 'dashboard-stats-row' });
+    statsRow.appendChild(el('div', { class: 'dashboard-stat' },
+      el('div', { class: 'dashboard-stat-value' }, String(totalMastered)),
+      el('div', { class: 'dashboard-stat-label' }, 'Maîtrisées')
+    ));
+    statsRow.appendChild(el('div', { class: 'dashboard-stat' },
+      el('div', { class: 'dashboard-stat-value' }, String(totalWeak)),
+      el('div', { class: 'dashboard-stat-label' }, 'À revoir')
+    ));
+    statsRow.appendChild(el('div', { class: 'dashboard-stat' },
+      el('div', { class: 'dashboard-stat-value' }, String(totalCards)),
+      el('div', { class: 'dashboard-stat-label' }, 'Total')
+    ));
+    dashboard.appendChild(statsRow);
+  }
 
   // Subjects grid
   const grid = el('div', { class: 'subject-grid' });
-  for (const subject of catalog.subjects) {
+  for (const { subject, mastered, total } of subjectStats) {
     const count = subject.chapters.length;
+    const pct = total > 0 ? Math.round(mastered / total * 100) : 0;
+    const meta = total > 0
+      ? `${count} chap. · ${pct}% maîtrisé`
+      : `${count} chapitre${count > 1 ? 's' : ''}`;
+
     grid.appendChild(
       el('div', { class: 'subject-card', onClick: () => navigate(subject.id) },
         el('span', { class: 'icon' }, subject.icon),
         el('span', { class: 'name' }, subject.name),
-        el('span', { class: 'meta' }, `${count} chapitre${count > 1 ? 's' : ''}`)
+        el('span', { class: 'meta' }, meta)
       )
     );
   }
@@ -53,6 +93,6 @@ export async function renderHome(container) {
   );
 
   const view = el('div', { class: 'view' });
-  view.append(topbar, dashboard, subjects);
+  view.append(topbar, searchBar, dashboard, subjects);
   container.appendChild(view);
 }

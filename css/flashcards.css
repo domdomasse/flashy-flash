@@ -269,6 +269,35 @@
 .fc-btn-retry   { background: var(--accent2); color: #0f172a; }
 .fc-btn-reset   { background: var(--surface2); color: var(--text-secondary); border: 1px solid var(--border); }
 
+/* ── Favorite button ── */
+.fc-fav-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(0,0,0,0.2);
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  border-radius: 50%;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fc-fav-btn.active { color: #fbbf24; background: rgba(251,191,36,.15); }
+.fc-fav-btn:active { transform: scale(1.2); }
+.fc-card-container { position: relative; }
+
+/* ── Special filters ── */
+.fc-filter-special {
+  border: 1px dashed var(--border);
+}
+
 /* ── Responsive ── */
 @media (max-width: 480px) {
   .fc-question { font-size: 1rem; }

@@ -1,0 +1,61 @@
+{
+  "exercises": [
+    {
+      "id": "compo_01",
+      "type": "composition",
+      "title": "Les recompositions spatiales en Chine",
+      "subject": "Montrez que la croissance économique chinoise s'accompagne de recompositions spatiales à toutes les échelles.",
+      "duration": 60,
+      "tips": [
+        "Structurez en 3 parties avec intro et conclusion",
+        "Utilisez des exemples précis et chiffrés (Shanghai, Urumqi, Chongqing, PIB, IDH)",
+        "Montrez les différentes échelles : nationale, régionale, locale",
+        "N'oubliez pas les espaces ruraux"
+      ],
+      "outline": "**I – Un territoire marqué par de profondes inégalités**\n- Les 3 Chine : littorale (58% PIB), intérieure, Ouest\n- Des inégalités croissantes (Gini, IDH Hong Kong vs Tibet)\n- Politiques de rééquilibrage : Go West, Route de la Soie\n\n**II – La métropolisation comme moteur de recomposition**\n- Concentration des fonctions de commandement (Shanghai)\n- Étalement urbain, conurbations, mégalopole en formation\n- Connexion au monde : LGV, ports, aéroports\n\n**III – Des espaces ruraux en mutation**\n- Exode rural et fragmentation socio-spatiale\n- Intensification agricole (fermes-usines, IA)\n- Exploitation des ressources et enjeux environnementaux"
+    },
+    {
+      "id": "compo_02",
+      "type": "composition",
+      "title": "Métropoles chinoises et mondialisation",
+      "subject": "En quoi les métropoles chinoises sont-elles des espaces clés de l'intégration de la Chine dans la mondialisation ?",
+      "duration": 60,
+      "tips": [
+        "Définissez métropole et métropolisation dès l'introduction",
+        "Montrez le rôle des métropoles à plusieurs échelles",
+        "Évoquez les limites : fragmentation, inégalités, quartiers informels",
+        "Appuyez-vous sur l'étude de cas de Shanghai"
+      ],
+      "outline": "**I – Des métropoles qui concentrent les fonctions de commandement**\n- CBD, pôles universitaires, culturels (ex. Shanghai)\n- Port de Shanghai : 1er mondial (36 500 M EVP/an)\n- Attractivité : Tesla, IDE, flux de personnes\n\n**II – Des métropoles connectées au territoire et au monde**\n- LGV : 700 km (2007) → 30 000 km (2025)\n- Aéroport Shanghai : 74 M passagers\n- Archipel métropolitain mondial, villes-mondes\n\n**III – Des espaces fragmentés et hiérarchisés**\n- Verticalisation + étalement urbain simultanés\n- Inégalités : gated communities vs quartiers informels (17-30%)\n- Hiérarchie : Urumqi < Pékin < Shanghai"
+    },
+    {
+      "id": "compo_03",
+      "type": "composition",
+      "title": "Les espaces ruraux chinois face à la mondialisation",
+      "subject": "En quoi les ressources naturelles et leur mise en valeur sont-elles à la fois des atouts et des enjeux pour les espaces ruraux chinois ?",
+      "duration": 60,
+      "tips": [
+        "Montrez d'abord la richesse des ressources",
+        "Puis l'exploitation intensive et ses bénéfices économiques",
+        "Terminez par les limites environnementales et sanitaires",
+        "Utilisez des exemples précis : Sichuan, Bayon Obo, Wuhan"
+      ],
+      "outline": "**I – Des espaces ruraux riches en ressources**\n- Énergies fossiles, terres rares, ressources agricoles\n- Répartition inégale → spécialisation régionale\n- 4,9 Md d'hectares agricoles, 20% de la pop. active\n\n**II – L'exploitation et la répartition des ressources**\n- Industrie lourde (Sichuan), barrages (Yangtsé)\n- Intensification agricole : Wuhan (650 000 porcs), IA\n- Investissements mondiaux (vignobles FR, soja Brésil)\n\n**III – Des risques environnementaux et sanitaires à gérer**\n- Pollution air/sols/eau (Bayon Obo)\n- Déforestation, stress hydrique au Nord\n- Tension entre croissance et durabilité"
+    },
+    {
+      "id": "croquis_01",
+      "type": "croquis",
+      "title": "Croquis : Les recompositions spatiales en Chine",
+      "subject": "Réalisez un croquis montrant les recompositions spatiales du territoire chinois dans le cadre de la mondialisation.",
+      "duration": 45,
+      "tips": [
+        "Légende organisée en 2-3 parties",
+        "Figurés de surface pour les 3 Chine (gradient de couleur)",
+        "Figurés ponctuels pour les métropoles (taille proportionnelle)",
+        "Figurés linéaires pour les axes : LGV, Route de la Soie, littoral",
+        "Flèches pour les flux (IDE, exportations, exode rural)"
+      ],
+      "outline": "**Légende possible :**\n\n**I – Un territoire inégalement développé**\n- Chine littorale (forte densité, IDH élevé)\n- Chine intérieure (développement intermédiaire)\n- Chine de l'Ouest (périphérie en marge)\n\n**II – Des dynamiques de recomposition**\n- Métropoles majeures (Shanghai, Pékin, Chongqing)\n- LGV et axes de communication\n- Nouvelle Route de la Soie\n- Littoralisation (ports, ZIP)\n\n**III – Des flux qui recomposent l'espace**\n- IDE et flux commerciaux (littoral)\n- Exode rural (Ouest/intérieur → littoral)\n- Politique « Go West »"
+    }
+  ]
+}

@@ -52,18 +52,22 @@ export function getCardProgress(cardId) {
   return state.cards[cardId] || null;
 }
 
-export function saveCardAnswer(cardId, correct) {
+export function saveCardAnswer(cardId, correct, spacedData) {
   load();
-  const existing = state.cards[cardId] || { score: 0, fav: false };
+  const existing = state.cards[cardId] || { score: 0, fav: false, level: 0 };
   existing.score += correct ? 1 : -1;
   existing.last = Date.now();
+  if (spacedData) {
+    existing.level = spacedData.level;
+    existing.next = spacedData.next;
+  }
   state.cards[cardId] = existing;
   save();
 }
 
 export function toggleFavorite(cardId) {
   load();
-  const existing = state.cards[cardId] || { score: 0, fav: false };
+  const existing = state.cards[cardId] || { score: 0, fav: false, level: 0 };
   existing.fav = !existing.fav;
   state.cards[cardId] = existing;
   save();
@@ -100,11 +104,29 @@ export function getChapterProgress(subjectId, chapterId, totalCards) {
     }
   }
   return {
-    reviewed,
-    mastered,
-    total: totalCards,
+    reviewed, mastered, total: totalCards,
     percent: totalCards ? Math.round(mastered / totalCards * 100) : 0
   };
+}
+
+export function getWeakCardsCount(subjectId, chapterId) {
+  load();
+  const prefix = `${subjectId}/${chapterId}/`;
+  let count = 0;
+  for (const [key, data] of Object.entries(state.cards)) {
+    if (key.startsWith(prefix) && data.score <= 0) count++;
+  }
+  return count;
+}
+
+export function getFavoritesCount(subjectId, chapterId) {
+  load();
+  const prefix = `${subjectId}/${chapterId}/`;
+  let count = 0;
+  for (const [key, data] of Object.entries(state.cards)) {
+    if (key.startsWith(prefix) && data.fav) count++;
+  }
+  return count;
 }
 
 // ── Reset ──
@@ -122,4 +144,26 @@ export function resetChapter(subjectId, chapterId) {
 export function resetAll() {
   state = JSON.parse(JSON.stringify(DEFAULTS));
   save();
+}
+
+// ── Export / Import ──
+
+export function exportData() {
+  load();
+  return JSON.stringify(state, null, 2);
+}
+
+export function importData(jsonString) {
+  try {
+    const data = JSON.parse(jsonString);
+    state = {
+      prefs: { ...DEFAULTS.prefs, ...data.prefs },
+      cards: data.cards || {},
+      chapters: data.chapters || {}
+    };
+    save();
+    return true;
+  } catch {
+    return false;
+  }
 }

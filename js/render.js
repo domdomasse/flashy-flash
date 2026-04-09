@@ -10,7 +10,16 @@ export async function renderView(viewFn, params) {
   app.style.opacity = '0';
   await new Promise(r => setTimeout(r, 100));
   app.innerHTML = '';
-  await viewFn(app, params);
+  try {
+    await viewFn(app, params);
+  } catch (err) {
+    console.error('[Flashy Flash]', err);
+    app.appendChild(el('div', { style: 'text-align:center;padding:60px 20px;color:#f43f5e;' },
+      el('p', { style: 'font-size:1.5rem;margin-bottom:8px;' }, '⚠️'),
+      el('p', {}, 'Erreur de chargement.'),
+      el('p', { style: 'font-size:0.8rem;color:#94a3b8;margin-top:8px;' }, String(err))
+    ));
+  }
   app.style.opacity = '1';
   window.scrollTo(0, 0);
 }
@@ -31,4 +40,14 @@ export function el(tag, attrs = {}, ...children) {
     else element.appendChild(child);
   }
   return element;
+}
+
+export function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.remove('visible');
+  void toast.offsetWidth; // force reflow for re-trigger
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), 2200);
 }
