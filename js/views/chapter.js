@@ -98,9 +98,6 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     if (newTab === activeTab) return;
     activeTab = newTab;
 
-    // Scroll en haut AVANT de changer le contenu
-    window.scrollTo(0, 0);
-
     // Run tab-level cleanups (scroll listeners, timers, keyboard, etc.)
     runCleanupsFrom(tabCleanupMark);
 
@@ -111,9 +108,11 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     tabBarBtns.forEach(b => b.el.classList.toggle('active', b.id === newTab));
     bottomNavBtns.forEach(b => b.el.classList.toggle('active', b.id === newTab));
 
-    // Clear content + filter slot
+    // Clear content + filter slot, THEN scroll to top
+    // (scrolling after clearing avoids browser scroll anchoring interference)
     content.innerHTML = '';
     filterSlot.innerHTML = '';
+    window.scrollTo(0, 0);
 
     // Reset topbar scroll state
     topbar.classList.remove('scrolled');
