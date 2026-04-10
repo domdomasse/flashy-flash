@@ -2,6 +2,7 @@ import { getChapterData } from '../data.js';
 import { getPrefs } from '../store.js';
 import { el, onCleanup } from '../render.js';
 import { icon } from '../icons.js';
+import { buildBackToTop } from '../services/toc.js';
 import { renderMarkdown } from '../utils/markdown.js';
 import { createTimer } from '../services/timer.js';
 
@@ -94,6 +95,8 @@ export async function renderExercisesTab(container, subjectId, chapterId) {
     }
     container.appendChild(card);
   }
+
+  container.appendChild(buildBackToTop());
 
   // Cleanup timers on navigation
   onCleanup(() => timers.forEach(t => t.stop()));

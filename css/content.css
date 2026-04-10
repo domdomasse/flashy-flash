@@ -168,33 +168,42 @@
 /* ── Back to top button ── */
 .back-to-top {
   position: fixed;
-  bottom: 76px;
-  right: 20px;
-  z-index: 900;
-  width: 44px;
-  height: 44px;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  z-index: 99;
   border: none;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--on-accent);
-  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font);
   cursor: pointer;
   touch-action: manipulation;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
   opacity: 0;
-  transform: translateY(12px);
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
 }
 .back-to-top.visible {
-  opacity: 1;
-  transform: translateY(0);
+  opacity: 0.85;
+  transform: translateX(-50%) translateY(0);
   pointer-events: auto;
 }
 .back-to-top:active {
-  opacity: 0.7;
+  opacity: 0.6;
+}
+
+/* Desktop : pas de bottom nav, rapprocher du bas */
+@media (min-width: 1024px) {
+  .back-to-top {
+    bottom: 24px;
+  }
 }
 
 /* ══════════════════════════════════════
@@ -550,6 +559,11 @@
   transition: all var(--transition);
 }
 .glossary-letter-btn:active { opacity: 0.7; }
+.glossary-letter-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
 .glossary-letter-btn.dimmed {
   opacity: 0.3;
   pointer-events: none;

@@ -85,17 +85,24 @@ export function buildBackToTop() {
     class: 'back-to-top',
     'aria-label': 'Retour en haut',
     onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, icon('chevron-up', 22));
+  }, icon('arrow-up', 14), 'Haut de page');
+
+  // Ajouté à body pour éviter les problèmes de position:fixed dans un contexte transform
+  document.body.appendChild(btn);
 
   function onScroll() {
     btn.classList.toggle('visible', window.scrollY > 400);
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  onCleanup(() => window.removeEventListener('scroll', onScroll));
+  onCleanup(() => {
+    window.removeEventListener('scroll', onScroll);
+    btn.remove();
+  });
   onScroll();
 
-  return btn;
+  // Retourne un fragment vide pour ne pas casser les container.appendChild(buildBackToTop())
+  return document.createDocumentFragment();
 }
 
 /**

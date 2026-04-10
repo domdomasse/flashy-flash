@@ -1,6 +1,7 @@
 import { getSubject } from '../data.js';
 import { getChapterProgress, getWeakCardsCount } from '../store.js';
 import { el } from '../render.js';
+import { buildBackToTop } from '../services/toc.js';
 import { navigate } from '../router.js';
 import { icon } from '../icons.js';
 
@@ -10,7 +11,8 @@ export async function renderSubject(container, { subject: subjectId }) {
 
   const topbar = el('div', { class: 'topbar' },
     el('button', { class: 'btn-back', onClick: () => navigate(''), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
-    el('h1', {}, subject.name)
+    el('h1', {}, subject.name),
+    el('button', { class: 'btn-icon', onClick: () => navigate('settings'), 'aria-label': 'Réglages' }, icon('settings', 22))
   );
 
   // ── Progression for this subject ──
@@ -83,4 +85,5 @@ export async function renderSubject(container, { subject: subjectId }) {
   const view = el('div', { class: 'view' });
   view.append(topbar, progressSection, chaptersSection);
   container.appendChild(view);
+  buildBackToTop();
 }

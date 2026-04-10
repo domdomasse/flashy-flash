@@ -1,6 +1,6 @@
-import { el } from '../render.js';
+import { el, onCleanup } from '../render.js';
 import { icon } from '../icons.js';
-import { onCleanup } from '../render.js';
+import { buildBackToTop } from '../services/toc.js';
 
 /** Strip accents for comparison */
 function normalize(str) {
@@ -74,11 +74,43 @@ export async function renderGlossaryTab(content, subjectId, chapterId) {
   });
   const letterBar = el('div', { class: 'glossary-letter-bar' });
   const letterBtns = {};
+  let activeLetter = null;
+
+  function clearLetterFilter() {
+    if (!activeLetter) return;
+    letterBtns[activeLetter].classList.remove('active');
+    activeLetter = null;
+    for (const l of letters) {
+      groups[l].el.style.display = '';
+      letterBtns[l].classList.remove('dimmed');
+    }
+    countLabel.textContent = `${entries.length} définitions`;
+  }
+
+  const allBtn = el('button', { class: 'glossary-letter-btn active', onClick: () => {
+    clearLetterFilter();
+    allBtn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }}, icon('list', 14));
+  letterBar.appendChild(allBtn);
+
   for (const letter of letters) {
     const btn = el('button', { class: 'glossary-letter-btn' }, letter);
     btn.addEventListener('click', () => {
-      const target = content.querySelector(`[data-letter-group="${letter}"]`);
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (activeLetter === letter) {
+        return;
+      } else {
+        // Activer le filtre sur cette lettre
+        activeLetter = letter;
+        allBtn.classList.remove('active');
+        for (const l of letters) {
+          groups[l].el.style.display = l === letter ? '' : 'none';
+          letterBtns[l].classList.remove('active', 'dimmed');
+        }
+        btn.classList.add('active');
+        countLabel.textContent = `${groups[letter].cards.length} définition${groups[letter].cards.length > 1 ? 's' : ''} — ${letter}`;
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     letterBar.appendChild(btn);
     letterBtns[letter] = btn;
@@ -122,6 +154,12 @@ export async function renderGlossaryTab(content, subjectId, chapterId) {
 
     // Show/hide clear button
     clearBtn.classList.toggle('hidden', !raw);
+
+    // Réinitialiser le filtre lettre
+    if (activeLetter) {
+      clearLetterFilter();
+      allBtn.classList.add('active');
+    }
 
     if (!q) {
       // Reset: show all, remove highlights, restore alpha order
@@ -194,6 +232,8 @@ export async function renderGlossaryTab(content, subjectId, chapterId) {
       searchInput.focus();
     }
   }, { signal: abortCtrl.signal });
+
+  content.appendChild(buildBackToTop());
 
   onCleanup(() => abortCtrl.abort());
 }

@@ -31,7 +31,6 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   if (!chapter) { navigate(subjectId); return; }
 
   let activeTab = tab;
-  let tabCleanupMark = getCleanupMark();
 
   async function shareChapter() {
     const url = window.location.href;
@@ -51,7 +50,10 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   const topbar = el('div', { class: 'topbar' },
     el('button', { class: 'btn-back', onClick: () => navigate(subjectId), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
     topbarCenter,
-    el('button', { class: 'btn-icon', onClick: shareChapter, 'aria-label': 'Partager' }, icon('share-2', 20))
+    el('div', { class: 'topbar-actions' },
+      el('button', { class: 'btn-icon', onClick: shareChapter, 'aria-label': 'Partager' }, icon('share-2', 20)),
+      el('button', { class: 'btn-icon', onClick: () => navigate('settings'), 'aria-label': 'Réglages' }, icon('settings', 22))
+    )
   );
 
   // Desktop: top tab bar
@@ -87,6 +89,9 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   // Bottom nav hors de #app pour ne pas être affecté par le fade-in
   document.body.appendChild(bottomNav);
   onCleanup(() => bottomNav.remove());
+
+  // Mark AFTER page-level cleanups (bottomNav) so tab switches don't remove them
+  let tabCleanupMark = getCleanupMark();
 
   // ── Switch tab without full page reload ──
   async function switchTab(newTab) {

@@ -1,5 +1,6 @@
 import { getCatalog } from '../data.js';
 import { el } from '../render.js';
+import { buildBackToTop } from '../services/toc.js';
 import { navigate } from '../router.js';
 import { icon } from '../icons.js';
 
@@ -46,4 +47,5 @@ export async function renderHome(container) {
   const view = el('div', { class: 'view' });
   view.append(topbar, searchBar, subjects);
   container.appendChild(view);
+  buildBackToTop();
 }

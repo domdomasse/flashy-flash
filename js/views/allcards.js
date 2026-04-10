@@ -1,6 +1,7 @@
 import { getCatalog, getAllCards } from '../data.js';
 import { getCardProgress } from '../store.js';
-import { el } from '../render.js';
+import { el, onCleanup } from '../render.js';
+import { buildBackToTop } from '../services/toc.js';
 import { navigate } from '../router.js';
 import { icon, refreshIcons } from '../icons.js';
 
@@ -114,5 +115,6 @@ export async function renderAllCards(container, { filter, subject: subjectFilter
   }
 
   renderList();
+  container.appendChild(buildBackToTop());
   refreshIcons();
 }

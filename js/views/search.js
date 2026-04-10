@@ -8,7 +8,8 @@ export async function renderSearch(container, { q }) {
 
   const topbar = el('div', { class: 'topbar' },
     el('button', { class: 'btn-back', onClick: () => navigate(''), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
-    el('h1', { class: 'app-title' }, icon('bolt', 24), 'Flashmob')
+    el('h1', { class: 'app-title' }, icon('bolt', 24), 'Flashmob'),
+    el('button', { class: 'btn-icon', onClick: () => navigate('settings'), 'aria-label': 'Réglages' }, icon('settings', 22))
   );
 
   // Search bar (same style as glossary)

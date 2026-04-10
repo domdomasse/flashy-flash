@@ -106,6 +106,12 @@
 }
 .btn-icon:active { opacity: 0.7; }
 
+.topbar-actions {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+}
+
 /* View container */
 .view {
   padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
