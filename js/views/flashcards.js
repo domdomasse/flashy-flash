@@ -174,39 +174,47 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       return;
     }
     sessionListType = type;
-    const cards = type === 'good' ? goodList : badList;
+    renderSessionList();
+    sessionListEl.scrollTop = 0;
+  }
+
+  function renderSessionList() {
+    if (!sessionListType) return;
+    const cards = sessionListType === 'good' ? goodList : badList;
     sessionListEl.innerHTML = '';
     if (cards.length === 0) {
       sessionListEl.appendChild(el('p', { class: 'cardlist-info' },
-        type === 'good' ? 'Aucune bonne réponse pour l\'instant.' : 'Aucune mauvaise réponse pour l\'instant.'
+        sessionListType === 'good' ? 'Aucune bonne réponse pour l\'instant.' : 'Aucune mauvaise réponse pour l\'instant.'
       ));
     } else {
-      sessionListEl.appendChild(el('p', { class: 'cardlist-info' },
-        `${cards.length} ${type === 'good' ? 'correcte' : 'à revoir'}${cards.length > 1 ? 's' : ''}`
-      ));
+      const answerDivs = [];
       for (const card of cards) {
         const answerDiv = el('div', { class: 'cardlist-a hidden' });
         answerDiv.innerHTML = card.a;
+        answerDivs.push(answerDiv);
         const catLabel = catMap[card.cat] || card.cat;
+        const colorBar = el('div', { class: 'cardlist-banbar ' + (sessionListType === 'good' ? 'session-good' : 'session-bad') });
         sessionListEl.appendChild(el('div', {
           class: 'cardlist-card',
-          onClick: () => answerDiv.classList.toggle('hidden')
+          onClick: () => {
+            const wasOpen = !answerDiv.classList.contains('hidden');
+            answerDivs.forEach(d => d.classList.add('hidden'));
+            if (!wasOpen) answerDiv.classList.remove('hidden');
+          }
         },
-          el('div', { class: 'cardlist-header' },
-            el('div', { class: 'cardlist-left' },
-              el('span', { class: 'cardlist-cat' }, catLabel),
-              el('div', { class: 'cardlist-q' }, card.q)
+          el('div', { class: 'cardlist-body' },
+            el('div', { class: 'cardlist-header' },
+              el('div', { class: 'cardlist-left' },
+                el('span', { class: 'cardlist-cat' }, catLabel),
+                el('div', { class: 'cardlist-q' }, card.q))
             ),
-            el('span', { class: 'cardlist-score ' + (type === 'good' ? 'good' : 'bad') },
-              icon(type === 'good' ? 'check' : 'x', 14))
+            answerDiv
           ),
-          answerDiv
+          colorBar
         ));
       }
     }
     sessionWrap.classList.remove('hidden');
-    sessionListEl.scrollTop = 0;
-    // Show/hide scroll hint based on content
     requestAnimationFrame(() => {
       sessionScrollHint.classList.toggle('hidden', sessionListEl.scrollHeight <= sessionListEl.clientHeight);
     });
@@ -221,14 +229,16 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   const questionText = el('p', { class: 'fc-question' });
   const answerText = el('p', { class: 'fc-answer' });
 
-  // Swipe overlays (green right / red left)
+  // Swipe overlays (green right / red left / grey down)
   const overlayGood = el('div', { class: 'fc-swipe-overlay good' }, icon('check', 32));
   const overlayBad = el('div', { class: 'fc-swipe-overlay bad' }, icon('x', 32));
+  const overlaySkip = el('div', { class: 'fc-swipe-overlay skip' }, icon('arrow-down', 32));
 
   function updateFavIcon(isFav) {
     favBtn.innerHTML = '';
     favBtn.appendChild(icon(isFav ? 'star' : 'star', 18));
     favBtn.classList.toggle('active', isFav);
+    refreshIcons();
   }
   const favBtn = el('button', { class: 'fc-fav-btn', onClick: (e) => {
     e.stopPropagation();
@@ -247,12 +257,12 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       ),
       el('div', { class: 'fc-card-back' }, answerText)
     ),
-    overlayGood, overlayBad
+    overlayGood, overlayBad, overlaySkip
   );
   const cardContainer = el('div', { class: 'fc-card-container' }, cardEl);
 
   const swipeHint = el('p', { class: 'fc-swipe-hint hidden' },
-    'Cliquer pour retourner \u00a0·\u00a0 Glisser ', icon('arrow-down', 12), ' pour passer \u00a0·\u00a0 Glisser ', icon('arrow-left', 12), icon('arrow-right', 12), ' pour répondre'
+    'Cliquer ou glisser ', icon('arrow-left', 12), icon('arrow-right', 12), ' pour retourner \u00a0·\u00a0 Glisser ', icon('arrow-down', 12), ' pour passer'
   );
 
   // Actions
@@ -332,11 +342,13 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       function doBan() {
         const nowBanned = toggleBanned(cardId);
         banBar.classList.toggle('banned', nowBanned);
+        banBar.classList.add('just-toggled');
         cardRow.classList.toggle('banned', nowBanned);
       }
 
       // Ban bar click (desktop)
       banBar.addEventListener('click', (e) => { e.stopPropagation(); doBan(); });
+      banBar.addEventListener('mouseleave', () => banBar.classList.remove('just-toggled'));
 
       const cardRow = el('div', {
         class: 'cardlist-card' + (isBanned ? ' banned' : ''),
@@ -472,6 +484,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     cardEl.style.transform = '';
     overlayGood.style.opacity = '0';
     overlayBad.style.opacity = '0';
+    overlaySkip.style.opacity = '0';
 
     const progress = getCardProgress(storeId(card));
     const isFav = progress && progress.fav;
@@ -495,14 +508,20 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       swipeHint.append(icon('arrow-left', 12), ' À revoir \u00a0·\u00a0 Je savais ', icon('arrow-right', 12));
     } else {
       swipeHint.innerHTML = '';
-      swipeHint.append(icon('arrow-down', 12), ' Glisser pour passer');
+      swipeHint.append(icon('arrow-left', 12), icon('arrow-right', 12), ' Retourner \u00a0·\u00a0 ', icon('arrow-down', 12), ' Passer');
     }
     setTimeout(() => { flipping = false; }, 550);
   }
 
   function goNext() {
     if (animating) return;
-    if (currentIdx < deck.length - 1) { currentIdx++; renderCard(); }
+    if (currentIdx < deck.length - 1) {
+      animating = true;
+      cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+      cardEl.style.transform = 'translateY(80px)';
+      cardEl.style.opacity = '0';
+      setTimeout(() => enterNextCard(() => { currentIdx++; }), 200);
+    }
     else if (currentIdx === deck.length - 1) { currentIdx++; showEnd(); }
   }
   function goPrev() { if (!animating && currentIdx > 0) { currentIdx--; renderCard(); } }
@@ -511,12 +530,37 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   // Answer with exit animation (#2)
   // ══════════════════════════════════════
 
+  /** Animate next card appearing (scale up + fade in) */
+  function enterNextCard(onBeforeEnter) {
+    const inner = cardEl.querySelector('.fc-card-inner');
+    inner.style.transition = 'none';
+    cardEl.style.transition = 'none';
+    cardEl.style.transform = 'scale(0.95)';
+    cardEl.style.opacity = '0';
+    if (onBeforeEnter) onBeforeEnter();
+    renderCard();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        cardEl.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
+        cardEl.style.transform = '';
+        cardEl.style.opacity = '';
+        setTimeout(() => {
+          cardEl.style.transition = '';
+          inner.style.transition = '';
+        }, 150);
+      });
+    });
+  }
+
   function answerCard(correct) {
     if (animating) return;
     animating = true;
     const card = deck[currentIdx];
     const id = storeId(card);
     if (correct) goodList.push(card); else badList.push(card);
+
+    // Refresh session list if open and matches the answer type
+    if (sessionListType === (correct ? 'good' : 'bad')) renderSessionList();
 
     if (prefs.spacedRepetition) {
       const progress = getCardProgress(id);
@@ -532,26 +576,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     cardEl.style.transform = `translateX(${dir * 120}%) rotate(${dir * 10}deg)`;
     cardEl.style.opacity = '0';
 
-    setTimeout(() => {
-      const inner = cardEl.querySelector('.fc-card-inner');
-      inner.style.transition = 'none';
-      cardEl.style.transition = 'none';
-      cardEl.style.transform = 'scale(0.95)';
-      cardEl.style.opacity = '0';
-      currentIdx++;
-      renderCard();
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          cardEl.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
-          cardEl.style.transform = '';
-          cardEl.style.opacity = '';
-          setTimeout(() => {
-            cardEl.style.transition = '';
-            inner.style.transition = '';
-          }, 150);
-        });
-      });
-    }, 200);
+    setTimeout(() => enterNextCard(() => { currentIdx++; }), 200);
   }
 
   // ══════════════════════════════════════
@@ -606,210 +631,132 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   }
 
   // ══════════════════════════════════════
-  // Touch with real-time feedback (#3)
+  // Free drag — Pointer Events (touch + mouse unified)
+  // Card follows pointer freely, action determined on release
   // ══════════════════════════════════════
 
-  let tX = 0, tY = 0, touchUsed = false, dragDir = null; // 'h' or 'v'
+  let dragging = false, startX = 0, startY = 0, hasMoved = false;
+  const DRAG_THRESHOLD = 10;   // px before a tap becomes a drag
+  const SWIPE_H = 80;          // px horizontal to trigger answer
+  const SWIPE_V = 60;          // px vertical to trigger skip
 
-  cardEl.addEventListener('touchstart', e => {
-    if (animating) return;
-    tX = e.changedTouches[0].clientX;
-    tY = e.changedTouches[0].clientY;
-    touchUsed = false;
-    dragDir = null;
+  cardEl.addEventListener('pointerdown', e => {
+    if (animating || listMode) return;
+    // Don't capture interactive elements inside the card
+    if (e.target.closest('.fc-fav-btn')) return;
+    dragging = true;
+    hasMoved = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    cardEl.setPointerCapture(e.pointerId);
     cardEl.style.transition = 'none';
-  }, { passive: true });
+  });
 
-  cardEl.addEventListener('touchmove', e => {
-    if (animating) return;
-    const dx = e.changedTouches[0].clientX - tX;
-    const dy = e.changedTouches[0].clientY - tY;
+  cardEl.addEventListener('pointermove', e => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
     const ax = Math.abs(dx), ay = Math.abs(dy);
 
-    // Lock direction on first significant move
-    if (!dragDir && (ax > 10 || ay > 10)) {
-      dragDir = ax > ay ? 'h' : 'v';
-    }
-    if (!dragDir) return;
+    // Still below tap threshold
+    if (!hasMoved && ax < DRAG_THRESHOLD && ay < DRAG_THRESHOLD) return;
+    if (!hasMoved) cardContainer.classList.add('dragging');
+    hasMoved = true;
 
-    // Horizontal: only when flipped (swipe to answer)
-    if (dragDir === 'h' && isFlipped) {
-      e.preventDefault();
-      const rotation = Math.max(-10, Math.min(10, dx * 0.06));
-      cardEl.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
-      const intensity = Math.min(ax / 120, 1);
-      if (dx > 0) {
-        overlayGood.style.opacity = String(intensity);
-        overlayBad.style.opacity = '0';
-      } else {
-        overlayBad.style.opacity = String(intensity);
-        overlayGood.style.opacity = '0';
-      }
-    }
+    // Free transform — card follows the pointer
+    const rotation = Math.max(-15, Math.min(15, dx * 0.08));
+    cardEl.style.transform = `translate(${dx}px, ${dy}px) rotate(${rotation}deg)`;
 
-    // Vertical down: skip (only when not flipped)
-    if (dragDir === 'v' && dy > 10 && !isFlipped) {
-      e.preventDefault();
-      const clamped = Math.min(dy, 100);
-      cardEl.style.transform = `translateY(${clamped}px)`;
-      cardEl.style.opacity = String(1 - clamped / 200);
-    }
-  }, { passive: false });
+    // Overlays — show feedback based on position and flip state
+    const dominantH = ax > ay && ax > 20;
+    const dominantV = dy > 20 && dy > ax;
 
-  cardEl.addEventListener('touchend', e => {
-    if (animating) return;
-    const dx = e.changedTouches[0].clientX - tX;
-    const dy = e.changedTouches[0].clientY - tY;
+    if (isFlipped && dominantH) {
+      const intensity = Math.min(ax / SWIPE_H, 1);
+      overlayGood.style.opacity = dx > 0 ? String(intensity) : '0';
+      overlayBad.style.opacity = dx < 0 ? String(intensity) : '0';
+      overlaySkip.style.opacity = '0';
+    } else if (dominantV) {
+      const intensity = Math.min(dy / SWIPE_V, 1);
+      overlaySkip.style.opacity = String(intensity);
+      overlayGood.style.opacity = '0';
+      overlayBad.style.opacity = '0';
+    } else {
+      overlayGood.style.opacity = '0';
+      overlayBad.style.opacity = '0';
+      overlaySkip.style.opacity = '0';
+    }
+  });
+
+  cardEl.addEventListener('pointerup', e => {
+    if (!dragging) return;
+    dragging = false;
+
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
     const ax = Math.abs(dx), ay = Math.abs(dy);
-    touchUsed = true;
-    if (dragDir) lastDragTime = Date.now();
 
-    // Reset overlays
+    // Reset overlays + drag layer
     overlayGood.style.opacity = '0';
     overlayBad.style.opacity = '0';
+    overlaySkip.style.opacity = '0';
+    cardContainer.classList.remove('dragging');
 
-    // Tap (no significant movement)
-    if (!dragDir && ax < 20 && ay < 20) {
+    // ── Tap (no significant movement) → flip ──
+    if (!hasMoved) {
       cardEl.style.transition = '';
       cardEl.style.transform = '';
-      cardEl.style.opacity = '';
-      const target = e.target;
       flipCard();
-    }
-    // Horizontal swipe when flipped → answer
-    else if (dragDir === 'h' && isFlipped && ax > 30) {
-      answerCard(dx > 0);
-    }
-    // Vertical swipe down when not flipped → skip
-    else if (dragDir === 'v' && dy > 50 && !isFlipped) {
-      cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-      cardEl.style.transform = 'translateY(120px)';
-      cardEl.style.opacity = '0';
-      setTimeout(() => {
-        cardEl.style.transition = '';
-        cardEl.style.transform = '';
-        cardEl.style.opacity = '';
-        goNext();
-      }, 200);
-    }
-    // Snap back
-    else {
-      cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-      cardEl.style.transform = '';
-      cardEl.style.opacity = '';
-    }
-
-    e.preventDefault();
-  }, { passive: false });
-
-  cardEl.addEventListener('click', () => {
-    if (touchUsed || mouseDragged) { touchUsed = false; mouseDragged = false; return; }
-    flipCard();
-  });
-
-  // ══════════════════════════════════════
-  // Mouse drag (desktop)
-  // — flipped: drag left/right to answer
-  // — not flipped: drag down to skip
-  // ══════════════════════════════════════
-
-  let mouseDown = false, mX = 0, mY = 0, mouseDragged = false, mouseDragDir = null;
-
-  cardEl.addEventListener('mousedown', e => {
-    if (animating) return;
-    mouseDown = true;
-    mouseDragged = false;
-    mouseDragDir = null;
-    mX = e.clientX;
-    mY = e.clientY;
-    cardEl.style.transition = 'none';
-    e.preventDefault();
-  });
-
-  document.addEventListener('mousemove', e => {
-    if (!mouseDown) return;
-    const dx = e.clientX - mX;
-    const dy = e.clientY - mY;
-    const ax = Math.abs(dx), ay = Math.abs(dy);
-
-    // Lock direction
-    if (!mouseDragDir && (ax > 5 || ay > 5)) {
-      mouseDragDir = ax > ay ? 'h' : 'v';
-    }
-    if (!mouseDragDir) return;
-    mouseDragged = true;
-
-    // Horizontal drag when flipped → answer
-    if (mouseDragDir === 'h' && isFlipped) {
-      const rotation = Math.max(-10, Math.min(10, dx * 0.06));
-      cardEl.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
-      const intensity = Math.min(ax / 120, 1);
-      if (dx > 0) {
-        overlayGood.style.opacity = String(intensity);
-        overlayBad.style.opacity = '0';
-      } else {
-        overlayBad.style.opacity = String(intensity);
-        overlayGood.style.opacity = '0';
-      }
-    }
-
-    // Vertical drag down when not flipped → skip
-    if (mouseDragDir === 'v' && dy > 5 && !isFlipped) {
-      const clamped = Math.min(dy, 100);
-      cardEl.style.transform = `translateY(${clamped}px)`;
-      cardEl.style.opacity = String(1 - clamped / 200);
-    }
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (!mouseDown) return;
-    mouseDown = false;
-    if (mouseDragged) lastDragTime = Date.now();
-    overlayGood.style.opacity = '0';
-    overlayBad.style.opacity = '0';
-
-    if (!mouseDragged) {
-      cardEl.style.transition = '';
-      cardEl.style.transform = '';
-      cardEl.style.opacity = '';
       return;
     }
 
-    // Horizontal answer
-    if (mouseDragDir === 'h' && isFlipped) {
-      const dx = parseFloat(cardEl.style.transform.match(/translateX\((.+?)px\)/)?.[1] || 0);
-      if (Math.abs(dx) > 30) {
-        answerCard(dx > 0);
-      } else {
-        cardEl.style.transition = 'transform 0.2s ease';
-        cardEl.style.transform = '';
-      }
-    }
-    // Vertical skip
-    else if (mouseDragDir === 'v' && !isFlipped) {
-      const dy = parseFloat(cardEl.style.transform.match(/translateY\((.+?)px\)/)?.[1] || 0);
-      if (dy > 50) {
-        cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-        cardEl.style.transform = 'translateY(120px)';
-        cardEl.style.opacity = '0';
-        setTimeout(() => {
-          cardEl.style.transition = '';
-          cardEl.style.transform = '';
-          cardEl.style.opacity = '';
-          goNext();
-        }, 200);
-      } else {
-        cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-        cardEl.style.transform = '';
-        cardEl.style.opacity = '';
-      }
-    }
-    // Snap back
-    else {
+    lastDragTime = Date.now();
+
+    // ── Vertical drag down past threshold → skip (recto or verso) ──
+    if (dy > SWIPE_V && dy > ax) {
+      const rotation = Math.max(-15, Math.min(15, dx * 0.08));
       cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-      cardEl.style.transform = '';
-      cardEl.style.opacity = '';
+      cardEl.style.transform = `translate(${dx}px, ${dy + 120}px) rotate(${rotation}deg)`;
+      cardEl.style.opacity = '0';
+      animating = true;
+      setTimeout(() => enterNextCard(() => {
+        if (currentIdx < deck.length - 1) currentIdx++;
+        else if (currentIdx === deck.length - 1) { currentIdx++; }
+      }), 200);
+      return;
     }
+
+    // ── Flipped + horizontal drag past threshold → answer ──
+    if (isFlipped && ax > SWIPE_H && ax > ay) {
+      answerCard(dx > 0);
+      return;
+    }
+
+    // ── Not flipped + horizontal drag past threshold → flip card ──
+    if (!isFlipped && ax > SWIPE_H && ax > ay) {
+      cardEl.style.transition = 'transform 0.3s ease';
+      cardEl.style.transform = '';
+      flipCard();
+      return;
+    }
+
+    // ── Below thresholds → snap back ──
+    cardEl.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease';
+    cardEl.style.transform = '';
+    cardEl.style.opacity = '';
+  });
+
+  // Prevent pointer cancel on touch devices
+  cardEl.addEventListener('pointercancel', () => {
+    if (!dragging) return;
+    dragging = false;
+    overlayGood.style.opacity = '0';
+    overlayBad.style.opacity = '0';
+    overlaySkip.style.opacity = '0';
+    cardContainer.classList.remove('dragging');
+    cardEl.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    cardEl.style.transform = '';
+    cardEl.style.opacity = '';
   });
 
   // ══════════════════════════════════════

@@ -762,8 +762,16 @@
   width: 16px;
 }
 .cardlist-banbar.banned {
-  background: var(--bad);
+  background: var(--text-muted);
   width: 12px;
+}
+.cardlist-banbar.session-good {
+  background: var(--good);
+  cursor: default;
+}
+.cardlist-banbar.session-bad {
+  background: var(--bad);
+  cursor: default;
 }
 .cardlist-score {
   flex-shrink: 0;

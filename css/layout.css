@@ -208,6 +208,18 @@
   letter-spacing: 0.3px;
 }
 
+/* Compact bottom nav on small screens: icons only */
+@media (max-width: 360px) {
+  .bottom-nav-btn {
+    min-height: 44px;
+    padding: 6px 0 4px;
+    gap: 0;
+  }
+  .bottom-nav-label {
+    display: none;
+  }
+}
+
 /* Extra bottom padding when bottom nav is visible */
 .view.has-bottom-nav {
   padding-bottom: max(80px, calc(56px + env(safe-area-inset-bottom, 24px)));

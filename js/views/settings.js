@@ -28,7 +28,7 @@ export async function renderSettings(container) {
   const prefs = getPrefs();
 
   const topbar = el('div', { class: 'topbar' },
-    el('button', { class: 'btn-back', onClick: () => navigate(''), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
+    el('button', { class: 'btn-back', onClick: () => history.back(), 'aria-label': 'Retour' }, icon('arrow-left', 20)),
     el('h1', {}, 'Réglages')
   );
 

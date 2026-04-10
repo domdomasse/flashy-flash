@@ -90,11 +90,11 @@ html { scroll-behavior: smooth; }
   }
 
   /* Ban bar */
-  .cardlist-banbar:hover {
+  .cardlist-banbar:not(.banned):not(.just-toggled):hover {
     width: 18px;
-    background: var(--bad);
+    background: var(--text-muted);
   }
-  .cardlist-banbar.banned:hover {
+  .cardlist-banbar.banned:not(.just-toggled):hover {
     width: 18px;
     background: var(--accent);
   }

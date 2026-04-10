@@ -108,13 +108,19 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     tabBarBtns.forEach(b => b.el.classList.toggle('active', b.id === newTab));
     bottomNavBtns.forEach(b => b.el.classList.toggle('active', b.id === newTab));
 
-    // Clear content + filter slot
+    // Clear content + filter slot, scroll to top
     content.innerHTML = '';
     filterSlot.innerHTML = '';
+    window.scrollTo(0, 0);
 
     // Reset topbar scroll state
     topbar.classList.remove('scrolled');
     topbarSection.textContent = '';
+
+    // Ensure bottom nav is still in the DOM (defensive)
+    if (!bottomNav.parentElement) {
+      document.body.appendChild(bottomNav);
+    }
 
     // Render new tab
     const renderer = TAB_RENDERERS[newTab];
@@ -130,10 +136,7 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     }
     tabCleanupMark = getCleanupMark();
     refreshIcons();
-
-    // Scroll to top AFTER render, in rAF to force mobile browsers
-    // to recalculate viewport (re-show address bar + reposition fixed elements)
-    requestAnimationFrame(() => window.scrollTo(0, 0));
+    window.scrollTo(0, 0);
   }
 
   // ── Render initial tab ──
