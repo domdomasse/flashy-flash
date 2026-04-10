@@ -46,13 +46,24 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   // ══════════════════════════════════════
 
   const progressText = el('span', {}, '');
-  const progressCounter = el('div', { class: 'fc-counter' }, icon('hash', 14), progressText);
+  const progressCounter = el('div', { class: 'fc-counter' }, progressText);
   const countGood = el('span', {}, '0');
   const countBad = el('span', {}, '0');
   const progressFill = el('div', { class: 'fc-progress-fill' });
 
   const listToggleBtn = el('button', { class: 'fc-list-toggle', onClick: toggleListMode }, icon('list', 16));
   const focusToggleBtn = el('button', { class: 'fc-list-toggle', onClick: toggleFocusMode }, icon('maximize-2', 16));
+
+  let hintTimer = null;
+  const infoBtn = el('button', { class: 'fc-list-toggle', onClick: () => {
+    swipeHint.classList.remove('hidden');
+    cardHint.classList.add('visible');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => {
+      swipeHint.classList.add('hidden');
+      cardHint.classList.remove('visible');
+    }, 3000);
+  }}, icon('info', 14));
 
   // ── Filter menu (drawer on mobile, dropdown on desktop) ──
   const filterBtns = [];
@@ -109,7 +120,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   }
 
   // Filter trigger button (in stats bar)
-  const filterLabel = el('span', {}, 'Toutes');
+  const filterLabel = el('span', { class: 'fc-filter-label' }, 'Toutes');
   const filterTrigger = el('button', { class: 'fc-filter-trigger', onClick: toggleFilterMenu },
     icon('filter', 16), ' ', filterLabel, el('span', { class: 'fc-filter-chevron' }, icon('chevron-down', 14))
   );
@@ -125,6 +136,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     el('div', { class: 'fc-stats-left' }, filterTriggerWrap, progressCounter),
     el('div', { class: 'fc-badges' },
       badgeGood, badgeBad,
+      infoBtn,
       listToggleBtn,
       focusToggleBtn
     )
@@ -218,6 +230,8 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   );
   const answerZones = el('div', { class: 'fc-zones' }, zoneBad, zoneGood);
 
+  const cardHint = el('span', { class: 'fc-hint' }, 'Appuyer pour révéler');
+
   const skipBtn = el('button', { class: 'fc-skip', onClick: (e) => {
     e.stopPropagation();
     if (!animating && !flipping) goNext();
@@ -227,8 +241,8 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     el('div', { class: 'fc-card-inner' },
       el('div', { class: 'fc-card-front' },
         categoryTag, favBtn, questionText,
-        skipBtn,
-        el('span', { class: 'fc-hint' }, 'Appuyer pour révéler')
+        cardHint,
+        skipBtn
       ),
       el('div', { class: 'fc-card-back' }, answerText, answerZones)
     ),
@@ -236,8 +250,8 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   );
   const cardContainer = el('div', { class: 'fc-card-container' }, cardEl);
 
-  const swipeHint = el('p', { class: 'fc-swipe-hint' },
-    '◀ swipe pour naviguer \u00a0·\u00a0 tap pour retourner ▶'
+  const swipeHint = el('p', { class: 'fc-swipe-hint hidden' },
+    'Tap pour retourner \u00a0·\u00a0 Swipe ▼ pour passer \u00a0·\u00a0 Swipe ◀▶ pour répondre'
   );
 
   // Actions
@@ -593,14 +607,14 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   // Touch with real-time feedback (#3)
   // ══════════════════════════════════════
 
-  let tX = 0, tY = 0, touchUsed = false, isDragging = false;
+  let tX = 0, tY = 0, touchUsed = false, dragDir = null; // 'h' or 'v'
 
   cardEl.addEventListener('touchstart', e => {
     if (animating) return;
     tX = e.changedTouches[0].clientX;
     tY = e.changedTouches[0].clientY;
     touchUsed = false;
-    isDragging = false;
+    dragDir = null;
     cardEl.style.transition = 'none';
   }, { passive: true });
 
@@ -608,19 +622,20 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     if (animating) return;
     const dx = e.changedTouches[0].clientX - tX;
     const dy = e.changedTouches[0].clientY - tY;
-    if (!isDragging && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
-      isDragging = true;
+    const ax = Math.abs(dx), ay = Math.abs(dy);
+
+    // Lock direction on first significant move
+    if (!dragDir && (ax > 10 || ay > 10)) {
+      dragDir = ax > ay ? 'h' : 'v';
     }
-    if (!isDragging) return;
-    e.preventDefault();
+    if (!dragDir) return;
 
-    // Card tilt
-    const rotation = Math.max(-10, Math.min(10, dx * 0.06));
-    cardEl.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
-
-    // Overlay intensity (only when flipped = answering mode)
-    if (isFlipped) {
-      const intensity = Math.min(Math.abs(dx) / 120, 1);
+    // Horizontal: only when flipped (swipe to answer)
+    if (dragDir === 'h' && isFlipped) {
+      e.preventDefault();
+      const rotation = Math.max(-10, Math.min(10, dx * 0.06));
+      cardEl.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
+      const intensity = Math.min(ax / 120, 1);
       if (dx > 0) {
         overlayGood.style.opacity = String(intensity);
         overlayBad.style.opacity = '0';
@@ -628,6 +643,14 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
         overlayBad.style.opacity = String(intensity);
         overlayGood.style.opacity = '0';
       }
+    }
+
+    // Vertical down: skip (only when not flipped)
+    if (dragDir === 'v' && dy > 10 && !isFlipped) {
+      e.preventDefault();
+      const clamped = Math.min(dy, 100);
+      cardEl.style.transform = `translateY(${clamped}px)`;
+      cardEl.style.opacity = String(1 - clamped / 200);
     }
   }, { passive: false });
 
@@ -642,27 +665,36 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     overlayGood.style.opacity = '0';
     overlayBad.style.opacity = '0';
 
-    if (!isDragging && ax < 20 && ay < 20) {
+    // Tap (no significant movement)
+    if (!dragDir && ax < 20 && ay < 20) {
       cardEl.style.transition = '';
       cardEl.style.transform = '';
-      // Don't flip if tapping an answer zone or skip button
+      cardEl.style.opacity = '';
       const target = e.target;
       if (target.closest && (target.closest('.fc-zone') || target.closest('.fc-skip'))) return;
       flipCard();
-    } else if (isDragging && ax > 30 && ax > ay) {
-      if (isFlipped) {
-        // Swipe to answer
-        answerCard(dx > 0);
-      } else {
-        // Swipe to navigate
-        cardEl.style.transition = 'transform 0.2s ease';
+    }
+    // Horizontal swipe when flipped → answer
+    else if (dragDir === 'h' && isFlipped && ax > 30) {
+      answerCard(dx > 0);
+    }
+    // Vertical swipe down when not flipped → skip
+    else if (dragDir === 'v' && dy > 50 && !isFlipped) {
+      cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+      cardEl.style.transform = 'translateY(120px)';
+      cardEl.style.opacity = '0';
+      setTimeout(() => {
+        cardEl.style.transition = '';
         cardEl.style.transform = '';
-        dx < 0 ? goNext() : goPrev();
-      }
-    } else {
-      // Snap back
-      cardEl.style.transition = 'transform 0.2s ease';
+        cardEl.style.opacity = '';
+        goNext();
+      }, 200);
+    }
+    // Snap back
+    else {
+      cardEl.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
       cardEl.style.transform = '';
+      cardEl.style.opacity = '';
     }
 
     e.preventDefault();
@@ -680,6 +712,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   const abortCtrl = new AbortController();
   onCleanup(() => {
     abortCtrl.abort();
+    clearTimeout(hintTimer);
     document.getElementById('app').classList.remove('fc-focus');
   });
 
@@ -687,10 +720,12 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     if (listMode || animating) return;
     if (!endEl.classList.contains('hidden')) return;
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
-    if (e.key === 'ArrowRight') { if (isFlipped) answerCard(true); else goNext(); }
-    if (e.key === 'ArrowLeft') { if (isFlipped) answerCard(false); else goPrev(); }
+    if (e.key === 'ArrowRight' && isFlipped) answerCard(true);
+    if (e.key === 'ArrowLeft' && isFlipped) answerCard(false);
+    if (e.key === 'ArrowDown' && !isFlipped) { e.preventDefault(); goNext(); }
     if ((e.key === 'g' || e.key === 'G') && isFlipped) answerCard(true);
     if ((e.key === 'b' || e.key === 'B') && isFlipped) answerCard(false);
+    if (e.key === 's' || e.key === 'S') { if (!isFlipped) goNext(); }
     if (e.key === 'f' || e.key === 'F') favBtn.click();
   }, { signal: abortCtrl.signal });
 

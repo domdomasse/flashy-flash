@@ -1,43 +1,59 @@
 /* ── Stats bar ── */
 .fc-stats {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 6px;
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin-bottom: 8px;
   position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.fc-stats::-webkit-scrollbar { display: none; }
+.fc-stats-left { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.fc-badges { display: flex; gap: 6px; align-items: center; flex-shrink: 0; margin-left: auto; }
+
 /* ── Progress counter ── */
 .fc-counter {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: 3px;
+  padding: 3px 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
-}
-.fc-counter [data-lucide] {
-  color: var(--accent);
+  flex-shrink: 0;
 }
 
-.fc-stats-left { display: flex; align-items: center; gap: 6px; }
-.fc-badges { display: flex; gap: 8px; align-items: center; }
+/* ── Badges ── */
 .fc-badge {
-  padding: 3px 12px;
+  padding: 2px 8px;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+.fc-badge [data-lucide] { flex-shrink: 0; }
+.fc-badge-label { /* label text inside badge */ }
 .fc-badge.good { background: rgba(34,197,94,.15); color: var(--good); border: 1px solid var(--good); }
 .fc-badge.bad  { background: rgba(244,63,94,.15);  color: var(--bad);  border: 1px solid var(--bad); }
 .fc-badge.clickable { cursor: pointer; touch-action: manipulation; }
 .fc-badge.clickable:active { opacity: 0.7; }
+
+/* ── Small screens: hide badge icons, filter text only ── */
+@media (max-width: 400px) {
+  .fc-badge [data-lucide] { display: none; }
+  .fc-filter-label { display: none; }
+  .fc-filter-trigger { max-width: none; }
+}
 
 /* ── Session answer list ── */
 .fc-session-list-wrap {
@@ -69,8 +85,8 @@
 .fc-session-scroll-hint.hidden { opacity: 0; }
 
 .fc-list-toggle {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +97,6 @@
   cursor: pointer;
   touch-action: manipulation;
   transition: all var(--transition);
-  margin-left: 4px;
 }
 .fc-list-toggle.active {
   background: var(--accent);
@@ -94,9 +109,9 @@
 .fc-progress-wrap {
   background: var(--surface2);
   border-radius: 999px;
-  height: 6px;
+  height: 5px;
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .fc-progress-fill {
   height: 100%;
@@ -113,29 +128,35 @@
 .fc-filter-trigger {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
+  gap: 3px;
+  padding: 3px 8px;
   height: 28px;
+  max-width: 130px;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--accent);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   touch-action: manipulation;
   transition: all var(--transition);
-  margin-left: 4px;
+}
+.fc-filter-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+}
+.fc-filter-chevron {
+  flex-shrink: 0;
+  display: inline-flex;
+  transition: transform var(--transition);
 }
 .fc-filter-trigger.active {
   border-color: var(--accent);
 }
 .fc-filter-trigger:active { opacity: 0.7; }
-.fc-filter-chevron {
-  display: inline-flex;
-  transition: transform var(--transition);
-}
 .fc-filter-trigger.active .fc-filter-chevron {
   transform: rotate(180deg);
 }
@@ -266,7 +287,6 @@
 .fc-filter-trigger-wrap {
   position: relative;
   display: inline-flex;
-  margin-left: 4px;
 }
 
 @media (min-width: 1024px) {
@@ -333,7 +353,7 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   border-radius: var(--radius);
-  padding: 48px 24px 40px;
+  padding: 48px 24px 56px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -341,9 +361,6 @@
   text-align: center;
   box-shadow: var(--shadow);
   overflow-y: auto;
-}
-.fc-card-back {
-  padding-bottom: 56px; /* space for answer zones */
 }
 .fc-card-front {
   background: var(--card-front);
@@ -415,9 +432,22 @@
 }
 .fc-answer strong { color: var(--accent); }
 
+.fc-hint {
+  position: absolute;
+  bottom: 52px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.fc-hint.visible {
+  opacity: 1;
+}
+
 .fc-skip {
   position: absolute;
-  bottom: 40px;
+  bottom: 10px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -433,13 +463,6 @@
   transition: all var(--transition);
 }
 .fc-skip:active { opacity: 0.7; }
-
-.fc-hint {
-  position: absolute;
-  bottom: 12px;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
 
 /* ── Answer buttons (inside card back, bottom) ── */
 .fc-zones {
@@ -485,11 +508,16 @@
 
 /* ── Swipe hint ── */
 .fc-swipe-hint {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   text-align: center;
   opacity: 0.7;
-  margin: -4px 0 12px;
+  margin: 8px 0 10px;
+  transition: opacity 0.3s ease;
+}
+.fc-swipe-hint.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 
