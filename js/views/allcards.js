@@ -47,34 +47,44 @@ export async function renderAllCards(container, { filter, subject: subjectFilter
     items = [...allItems];
   }
 
-  // Sort controls (only for 'all')
+  // Sort controls
   let currentSort = 'alpha';
   const sortBar = el('div', { class: 'fc-filters' });
   const sortBtns = [];
 
-  if (filter === 'all') {
-    for (const opt of SORT_OPTIONS) {
-      const btn = el('button', {
-        class: 'fc-filter-btn' + (opt.id === 'alpha' ? ' active' : ''),
-        onClick: () => {
-          currentSort = opt.id;
-          sortBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          renderList();
-        }
-      }, opt.label);
-      sortBar.appendChild(btn);
-      sortBtns.push(btn);
-    }
+  for (const opt of SORT_OPTIONS) {
+    const btn = el('button', {
+      class: 'fc-filter-btn' + (opt.id === 'alpha' ? ' active' : ''),
+      onClick: () => {
+        currentSort = opt.id;
+        sortBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderList();
+      }
+    }, opt.label);
+    sortBar.appendChild(btn);
+    sortBtns.push(btn);
   }
+
+  const sortScrollHint = el('div', { class: 'fc-filters-scroll-hint' }, icon('chevron-right', 14));
+  const sortWrap = el('div', { class: 'fc-filters-wrap' }, sortBar, sortScrollHint);
+
+  function checkSortOverflow() {
+    if (!sortBar.clientWidth) return;
+    const hasOverflow = sortBar.scrollWidth > sortBar.clientWidth + 4;
+    const atEnd = sortBar.scrollLeft + sortBar.clientWidth >= sortBar.scrollWidth - 4;
+    sortScrollHint.classList.toggle('hidden', !hasOverflow || atEnd);
+  }
+  sortBar.addEventListener('scroll', checkSortOverflow, { passive: true });
+  window.addEventListener('resize', checkSortOverflow, { passive: true });
+  setTimeout(checkSortOverflow, 100);
+  onCleanup(() => window.removeEventListener('resize', checkSortOverflow));
 
   const countEl = el('p', { class: 'cardlist-info' }, `${items.length} cartes`);
   const listEl = el('div', { class: 'allcards-list' });
 
   const view = el('div', { class: 'view' });
-  view.append(topbar);
-  if (filter === 'all') view.appendChild(sortBar);
-  view.append(countEl, listEl);
+  view.append(topbar, sortWrap, countEl, listEl);
   container.appendChild(view);
 
   function sortItems() {
@@ -101,14 +111,17 @@ export async function renderAllCards(container, { filter, subject: subjectFilter
         class: 'cardlist-card',
         onClick: () => answerDiv.classList.toggle('hidden')
       },
-        el('div', { class: 'cardlist-header' },
-          el('div', { class: 'cardlist-left' },
-            el('span', { class: 'cardlist-cat' }, item.catLabel),
-            el('div', { class: 'cardlist-q' }, item.card.q)
+        el('div', { class: 'cardlist-body' },
+          el('div', { class: 'cardlist-header' },
+            el('div', { class: 'cardlist-left' },
+              el('div', { class: 'cardlist-cat-row' },
+                el('span', { class: 'cardlist-cat' }, item.catLabel),
+                el('span', { class: 'cardlist-score-inline ' + scoreClass }, String(score))
+              ),
+              el('div', { class: 'cardlist-q' }, item.card.q))
           ),
-          el('span', { class: 'cardlist-score ' + scoreClass }, String(score))
-        ),
-        answerDiv
+          answerDiv
+        )
       );
       listEl.appendChild(cardRow);
     }

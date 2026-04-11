@@ -563,6 +563,9 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     cardEl.style.opacity = '0';
     if (onBeforeEnter) onBeforeEnter();
     renderCard();
+    // renderCard sets animating = false, but the enter animation isn't done yet.
+    // Block interactions until the animation completes.
+    animating = true;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         cardEl.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
@@ -571,6 +574,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
         setTimeout(() => {
           cardEl.style.transition = '';
           inner.style.transition = '';
+          animating = false;
         }, 150);
       });
     });
@@ -660,7 +664,13 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   // ══════════════════════════════════════
 
   // Safety net: prevent ALL native touch gestures on the card area
-  // (back navigation, address bar, scroll) even if CSS touch-action fails
+  // (back navigation, address bar, scroll) even if CSS touch-action fails.
+  // preventDefault on touchstart is the earliest and most reliable signal —
+  // the browser MUST honor it before deciding on any gesture.
+  cardEl.addEventListener('touchstart', e => {
+    if (e.target.closest('.fc-fav-btn')) return; // preserve fav button taps
+    e.preventDefault();
+  }, { passive: false });
   cardEl.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
   let dragging = false, startX = 0, startY = 0, hasMoved = false;
