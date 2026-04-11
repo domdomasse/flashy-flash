@@ -85,7 +85,7 @@ export function buildBackToTop() {
     class: 'back-to-top',
     'aria-label': 'Retour en haut',
     onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, icon('arrow-up', 14), 'Haut de page');
+  }, icon('arrow-up', 18));
 
   // Ajouté à body pour éviter les problèmes de position:fixed dans un contexte transform
   document.body.appendChild(btn);

@@ -153,6 +153,21 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
       focusToggleBtn
     )
   );
+  const statsScrollHint = el('div', { class: 'fc-stats-scroll-hint' }, icon('chevron-right', 14));
+  const statsWrap = el('div', { class: 'fc-stats-wrap' }, stats, statsScrollHint);
+
+  function checkStatsOverflow() {
+    if (!stats.clientWidth) return; // not in DOM yet
+    const hasOverflow = stats.scrollWidth > stats.clientWidth + 4;
+    const atEnd = stats.scrollLeft + stats.clientWidth >= stats.scrollWidth - 4;
+    statsScrollHint.classList.toggle('hidden', !hasOverflow || atEnd);
+  }
+  stats.addEventListener('scroll', checkStatsOverflow, { passive: true });
+  window.addEventListener('resize', checkStatsOverflow, { passive: true });
+  // Defer initial check until DOM is ready
+  setTimeout(checkStatsOverflow, 100);
+  onCleanup(() => window.removeEventListener('resize', checkStatsOverflow));
+
   const progressBar = el('div', { class: 'fc-progress-wrap' }, progressFill);
 
   // Session list (good/bad answers during current session)
@@ -286,7 +301,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
 
   const deckArea = el('div', { class: 'fc-deck-area' }, cardContainer, swipeHint, endEl);
 
-  container.append(stats, progressBar, sessionWrap, deckArea, cardListEl);
+  container.append(statsWrap, progressBar, sessionWrap, deckArea, cardListEl);
 
   // ══════════════════════════════════════
   // Focus mode (#10)
@@ -468,6 +483,15 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     cardContainer.style.display = '';
     swipeHint.style.display = '';
     endEl.classList.add('hidden');
+
+    // Fix counter widths based on total digits to avoid layout shift
+    const digits = String(deck.length).length;
+    const counterWidth = (digits * 2 + 2) + 'ch'; // "XX/XX"
+    progressText.style.minWidth = counterWidth;
+    const badgeWidth = digits + 'ch';
+    countGood.style.minWidth = badgeWidth;
+    countBad.style.minWidth = badgeWidth;
+
     renderCard();
   }
 

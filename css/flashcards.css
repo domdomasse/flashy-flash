@@ -1,11 +1,14 @@
 /* ── Stats bar ── */
+.fc-stats-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
 .fc-stats {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 0.85rem;
   color: var(--text-secondary);
-  margin-bottom: 8px;
   position: relative;
   overflow-x: auto;
   overflow-y: hidden;
@@ -14,10 +17,29 @@
 }
 .fc-stats::-webkit-scrollbar { display: none; }
 
+.fc-stats-scroll-hint {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  background: linear-gradient(to right, transparent, var(--bg) 60%);
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.fc-stats-scroll-hint.hidden {
+  opacity: 0;
+}
+
 @media (min-width: 1024px) {
   .fc-stats {
     overflow: visible;
   }
+  .fc-stats-scroll-hint { display: none; }
 }
 .fc-stats-left { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .fc-badges { display: flex; gap: 10px; align-items: center; flex-shrink: 0; margin-left: auto; }
@@ -26,8 +48,8 @@
 .fc-counter {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
+  gap: 2px;
+  padding: 3px 6px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -48,6 +70,14 @@
   flex-shrink: 0;
 }
 .fc-badge [data-lucide] { flex-shrink: 0; }
+.fc-badge span {
+  display: inline-block;
+  text-align: center;
+}
+.fc-counter span {
+  display: inline-block;
+  text-align: center;
+}
 .fc-badge-label { /* label text inside badge */ }
 .fc-badge.good { background: rgba(34,197,94,.15); color: var(--good); border: 1px solid var(--good); }
 .fc-badge.bad  { background: rgba(244,63,94,.15);  color: var(--bad);  border: 1px solid var(--bad); }
@@ -55,7 +85,7 @@
 .fc-badge.clickable:active { opacity: 0.7; }
 
 /* ── Small screens: hide badge icons, filter text only ── */
-@media (max-width: 400px) {
+@media (max-width: 440px) {
   .fc-badge [data-lucide] { display: none; }
   .fc-filter-label { display: none; }
   .fc-filter-trigger { max-width: none; }
@@ -327,6 +357,7 @@
   position: relative;
   -webkit-perspective: 1200px;
   perspective: 1200px;
+  touch-action: none;
 }
 .fc-card {
   width: 100%;
@@ -625,6 +656,9 @@
 .fc-filter-special {
   border: 1px dashed var(--border);
 }
+.fc-deck-area {
+  touch-action: pan-y;
+}
 .fc-deck-area.hidden { display: none; }
 .fc-cardlist.hidden { display: none; }
 
@@ -635,7 +669,7 @@
 .fc-focus .topbar { display: none; }
 .fc-focus .bottom-nav { display: none; }
 .fc-focus .tab-bar { display: none; }
-.fc-focus .fc-stats { display: none; }
+.fc-focus .fc-stats-wrap { display: none; }
 .fc-focus .fc-filter-container { display: none !important; }
 
 /* Focus mode: center card vertically */
