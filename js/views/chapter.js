@@ -90,29 +90,50 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   document.body.appendChild(bottomNav);
 
   // Visual Viewport positioning for Firefox Android dynamic toolbar.
-  // Uses top-based positioning from the visual viewport (always accurate)
-  // instead of bottom-based (depends on layout viewport which can lag).
+  // Uses absolute positioning anchored to the visual viewport bottom,
+  // bypassing position:fixed which Firefox miscalculates during toolbar transitions.
+  let syncRafId = null;
+
   function syncBottomNav() {
     if (!window.visualViewport) return;
     const vv = window.visualViewport;
+    const navH = bottomNav.offsetHeight || 56;
+    // Absolute position: scroll offset + visual viewport bottom - nav height
+    bottomNav.style.position = 'absolute';
     bottomNav.style.bottom = 'auto';
-    bottomNav.style.top = (vv.offsetTop + vv.height - bottomNav.offsetHeight) + 'px';
+    bottomNav.style.top = (window.scrollY + vv.offsetTop + vv.height - navH) + 'px';
   }
+
+  // Run a burst of syncs over ~600ms to catch Firefox toolbar transitions
+  function syncBurst() {
+    let frames = 0;
+    function loop() {
+      syncBottomNav();
+      if (++frames < 36) syncRafId = requestAnimationFrame(loop);
+    }
+    if (syncRafId) cancelAnimationFrame(syncRafId);
+    syncRafId = requestAnimationFrame(loop);
+  }
+
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', syncBottomNav);
     window.visualViewport.addEventListener('scroll', syncBottomNav);
     window.addEventListener('scroll', syncBottomNav, { passive: true });
-    syncBottomNav();
+    window.addEventListener('touchmove', syncBottomNav, { passive: true });
+    syncBurst(); // initial burst
   }
 
   onCleanup(() => {
     bottomNav.remove();
+    bottomNav.style.position = '';
     bottomNav.style.top = '';
     bottomNav.style.bottom = '';
+    if (syncRafId) cancelAnimationFrame(syncRafId);
     if (window.visualViewport) {
       window.visualViewport.removeEventListener('resize', syncBottomNav);
       window.visualViewport.removeEventListener('scroll', syncBottomNav);
       window.removeEventListener('scroll', syncBottomNav);
+      window.removeEventListener('touchmove', syncBottomNav);
     }
   });
 
@@ -163,16 +184,8 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     tabCleanupMark = getCleanupMark();
     refreshIcons();
     window.scrollTo(0, 0);
-    // Resync bottom nav position after tab switch.
-    // Firefox Android's visual viewport updates asynchronously after scrollTo,
-    // so we sync multiple times to catch the final state.
-    syncBottomNav();
-    requestAnimationFrame(() => {
-      window.scrollTo(0, 0);
-      syncBottomNav();
-      // One more after Firefox toolbar transition settles (~300ms)
-      setTimeout(syncBottomNav, 300);
-    });
+    // Burst sync for Firefox Android toolbar transition
+    syncBurst();
   }
 
   // ── Render initial tab ──
@@ -188,7 +201,4 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     );
   }
 
-  // Initial sync after page load (Firefox Android toolbar may still be transitioning)
-  requestAnimationFrame(syncBottomNav);
-  setTimeout(syncBottomNav, 300);
 }
