@@ -163,9 +163,16 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     tabCleanupMark = getCleanupMark();
     refreshIcons();
     window.scrollTo(0, 0);
-    // Second scrollTo in rAF: forces Firefox Android to recalculate viewport
-    // when its bottom address bar is hidden (programmatic scroll alone doesn't trigger it)
-    requestAnimationFrame(() => window.scrollTo(0, 0));
+    // Resync bottom nav position after tab switch.
+    // Firefox Android's visual viewport updates asynchronously after scrollTo,
+    // so we sync multiple times to catch the final state.
+    syncBottomNav();
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      syncBottomNav();
+      // One more after Firefox toolbar transition settles (~300ms)
+      setTimeout(syncBottomNav, 300);
+    });
   }
 
   // ── Render initial tab ──
@@ -180,4 +187,8 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
       )
     );
   }
+
+  // Initial sync after page load (Firefox Android toolbar may still be transitioning)
+  requestAnimationFrame(syncBottomNav);
+  setTimeout(syncBottomNav, 300);
 }
