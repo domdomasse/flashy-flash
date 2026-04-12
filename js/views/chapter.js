@@ -88,7 +88,28 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   container.appendChild(view);
   // Bottom nav hors de #app pour ne pas être affecté par le fade-in
   document.body.appendChild(bottomNav);
-  onCleanup(() => bottomNav.remove());
+
+  // Visual Viewport API: reposition bottom nav for Firefox Android bottom toolbar
+  function syncBottomNav() {
+    if (!window.visualViewport) return;
+    const vv = window.visualViewport;
+    const offset = window.innerHeight - (vv.height + vv.offsetTop);
+    bottomNav.style.bottom = offset > 0 ? offset + 'px' : '0';
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', syncBottomNav);
+    window.visualViewport.addEventListener('scroll', syncBottomNav);
+    syncBottomNav();
+  }
+
+  onCleanup(() => {
+    bottomNav.remove();
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', syncBottomNav);
+      window.visualViewport.removeEventListener('scroll', syncBottomNav);
+    }
+    bottomNav.style.bottom = '';
+  });
 
   // Mark AFTER page-level cleanups (bottomNav) so tab switches don't remove them
   let tabCleanupMark = getCleanupMark();
