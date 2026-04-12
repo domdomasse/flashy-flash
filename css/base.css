@@ -26,7 +26,6 @@ body {
   min-height: 100dvh;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  overscroll-behavior: none;
 }
 
 a { color: var(--accent); text-decoration: none; }
