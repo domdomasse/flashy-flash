@@ -86,11 +86,16 @@ function processTextNodes(element, regex, glossary) {
       span.addEventListener('mouseleave', dismissTooltip);
       // Block click (no action needed, hover handles it on desktop)
       span.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); });
-      // Mobile: tap to show
-      span.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        showTooltip(e);
-      }, { passive: false });
+      // Mobile: tap to show (use touchend to not block scroll)
+      let touchMoved = false;
+      span.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+      span.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+      span.addEventListener('touchend', (e) => {
+        if (!touchMoved) {
+          e.preventDefault();
+          showTooltip(e);
+        }
+      });
       fragment.appendChild(span);
 
       lastIndex = regex.lastIndex;

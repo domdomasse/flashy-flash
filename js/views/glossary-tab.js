@@ -123,9 +123,16 @@ export async function renderGlossaryTab(content, subjectId, chapterId) {
   for (const letter of letters) {
     const groupEl = el('div', { class: 'glossary-group' });
     groupEl.setAttribute('data-letter-group', letter);
-    const header = el('div', { class: 'glossary-group-header' }, letter);
+    const header = el('div', { class: 'glossary-group-header section-toggle', onClick: () => {
+      header.classList.toggle('collapsed');
+    }},
+      el('span', { class: 'section-chevron' }, icon('chevron-down', 12)),
+      letter
+    );
+    const groupBody = el('div', { class: 'section-body' });
     groupEl.appendChild(header);
-    groups[letter] = { el: groupEl, cards: [] };
+    groupEl.appendChild(groupBody);
+    groups[letter] = { el: groupEl, body: groupBody, cards: [] };
     listWrap.appendChild(groupEl);
   }
 
@@ -137,7 +144,7 @@ export async function renderGlossaryTab(content, subjectId, chapterId) {
     termEl.textContent = entry.term;
     defEl.textContent = entry.def;
     const card = el('div', { class: 'glossary-card' }, termEl, defEl);
-    groups[letter].el.appendChild(card);
+    groups[letter].body.appendChild(card);
     groups[letter].cards.push(card);
     cardData.push({ card, entry, letter, termEl, defEl });
   }

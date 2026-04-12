@@ -698,7 +698,11 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
 
     // Still below tap threshold
     if (!hasMoved && ax < DRAG_THRESHOLD && ay < DRAG_THRESHOLD) return;
-    if (!hasMoved) cardContainer.classList.add('dragging');
+    if (!hasMoved) {
+      cardContainer.classList.add('dragging');
+      // Lock body scroll during drag to prevent mobile browser chrome changes
+      document.body.style.overflow = 'hidden';
+    }
     hasMoved = true;
 
     // Free transform — card follows the pointer
@@ -734,11 +738,12 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     const dy = e.clientY - startY;
     const ax = Math.abs(dx), ay = Math.abs(dy);
 
-    // Reset overlays + drag layer
+    // Reset overlays + drag layer + unlock body scroll
     overlayGood.style.opacity = '0';
     overlayBad.style.opacity = '0';
     overlaySkip.style.opacity = '0';
     cardContainer.classList.remove('dragging');
+    document.body.style.overflow = '';
 
     // ── Tap (no significant movement) → flip ──
     if (!hasMoved) {
@@ -792,6 +797,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     overlayBad.style.opacity = '0';
     overlaySkip.style.opacity = '0';
     cardContainer.classList.remove('dragging');
+    document.body.style.overflow = '';
     cardEl.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
     cardEl.style.transform = '';
     cardEl.style.opacity = '';

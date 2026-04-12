@@ -11,6 +11,47 @@
   border-radius: var(--radius);
   padding: 18px;
 }
+/* ── Collapsible sections ── */
+.section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+.section-toggle .section-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+  display: flex;
+}
+.section-toggle.collapsed .section-chevron {
+  transform: rotate(-90deg);
+}
+/* Remove heading margins inside toggles — the toggle itself handles spacing */
+.section-toggle h2,
+.section-toggle h3 {
+  margin-bottom: 0;
+}
+.section-toggle + .section-body {
+  transition: opacity 0.2s ease;
+}
+.section-toggle.collapsed + .section-body {
+  display: none;
+}
+.summary-card > .section-toggle {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.summary-card > .section-toggle.collapsed {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
 .summary-section-title {
   font-size: 1.1rem;
   font-weight: 700;
@@ -18,6 +59,12 @@
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
+}
+.section-toggle .summary-section-title {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  flex: 1;
 }
 .summary-subsection {
   margin-bottom: 20px;
@@ -221,9 +268,11 @@
 .exercise-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
   margin-bottom: 12px;
+}
+.exercise-header .exercise-duration {
+  margin-left: auto;
 }
 .exercise-type {
   font-size: 0.7rem;

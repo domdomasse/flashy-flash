@@ -39,15 +39,21 @@ export async function renderExercisesTab(container, subjectId, chapterId) {
   for (const exo of data.exercises) {
     const card = el('div', { class: 'exercise-card' });
 
-    // Header with optional timer
+    // Header (collapsible toggle)
     const typeLabels = { composition: 'Composition', croquis: 'Croquis', etude: 'Étude de doc' };
     const headerLeft = el('span', { class: 'exercise-type' }, typeLabels[exo.type] || exo.type);
     const headerRight = el('span', { class: 'exercise-duration' }, icon('clock', 14), ` ${exo.duration} min`);
-    card.appendChild(el('div', { class: 'exercise-header' }, headerLeft, headerRight));
+    const exoToggle = el('div', { class: 'exercise-header section-toggle', onClick: () => exoToggle.classList.toggle('collapsed') },
+      el('span', { class: 'section-chevron' }, icon('chevron-down', 14)),
+      headerLeft, headerRight
+    );
+    card.appendChild(exoToggle);
+
+    const exoBody = el('div', { class: 'section-body' });
 
     // Title + subject
-    card.appendChild(el('div', { class: 'exercise-title' }, exo.title));
-    card.appendChild(el('div', { class: 'exercise-subject' }, `« ${exo.subject} »`));
+    exoBody.appendChild(el('div', { class: 'exercise-title' }, exo.title));
+    exoBody.appendChild(el('div', { class: 'exercise-subject' }, `« ${exo.subject} »`));
 
     // Timer (if enabled in prefs)
     if (prefs.timer && exo.duration) {
@@ -83,16 +89,17 @@ export async function renderExercisesTab(container, subjectId, chapterId) {
         timerDisplay.classList.remove('urgent', 'ended');
       });
 
-      card.appendChild(el('div', { class: 'timer-bar' }, timerDisplay, btnStart, btnStop, btnResetTimer));
+      exoBody.appendChild(el('div', { class: 'timer-bar' }, timerDisplay, btnStart, btnStop, btnResetTimer));
     }
 
     // Revealables
     if (exo.tips?.length > 0) {
-      card.appendChild(createRevealable('Conseils méthodologiques', exo.tips.map(t => `- ${t}`).join('\n')));
+      exoBody.appendChild(createRevealable('Conseils méthodologiques', exo.tips.map(t => `- ${t}`).join('\n')));
     }
     if (exo.outline) {
-      card.appendChild(createRevealable('Plan détaillé (corrigé)', exo.outline));
+      exoBody.appendChild(createRevealable('Plan détaillé (corrigé)', exo.outline));
     }
+    card.appendChild(exoBody);
     container.appendChild(card);
   }
 

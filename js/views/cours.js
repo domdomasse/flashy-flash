@@ -18,31 +18,47 @@ export async function renderCoursTab(container, subjectId, chapterId) {
   // Table of contents
   container.appendChild(buildToc(container, data.sections, 'c-'));
 
-  // Sections
+  // Sections (collapsible)
   for (const section of data.sections) {
     const sectionSlug = 'c-' + slugify(section.title);
     const sectionEl = el('div', { class: 'summary-section summary-card' });
 
-    sectionEl.appendChild(el('h2', { class: 'summary-section-title', id: sectionSlug }, section.title));
+    const sectionToggle = el('div', { class: 'section-toggle', onClick: () => sectionToggle.classList.toggle('collapsed') },
+      el('span', { class: 'section-chevron' }, icon('chevron-down', 14)),
+      el('h2', { class: 'summary-section-title', id: sectionSlug }, section.title)
+    );
+    sectionEl.appendChild(sectionToggle);
+
+    const sectionBody = el('div', { class: 'section-body' });
 
     if (section.content) {
       const textEl = el('div', { class: 'summary-text' });
       textEl.appendChild(renderMarkdown(section.content));
-      sectionEl.appendChild(textEl);
+      sectionBody.appendChild(textEl);
     }
 
     if (section.subsections) {
       for (const sub of section.subsections) {
         const subSlug = 'c-' + slugify(section.title + ' ' + sub.title);
         const subEl = el('div', { class: 'summary-subsection' });
-        subEl.appendChild(el('h3', { class: 'summary-subsection-title', id: subSlug }, sub.title));
+
+        const subToggle = el('div', { class: 'section-toggle', onClick: () => subToggle.classList.toggle('collapsed') },
+          el('span', { class: 'section-chevron' }, icon('chevron-down', 12)),
+          el('h3', { class: 'summary-subsection-title', id: subSlug }, sub.title)
+        );
+        subEl.appendChild(subToggle);
+
+        const subBody = el('div', { class: 'section-body' });
         const textEl = el('div', { class: 'summary-text' });
         textEl.appendChild(renderMarkdown(sub.content));
-        subEl.appendChild(textEl);
-        sectionEl.appendChild(subEl);
+        subBody.appendChild(textEl);
+        subEl.appendChild(subBody);
+
+        sectionBody.appendChild(subEl);
       }
     }
 
+    sectionEl.appendChild(sectionBody);
     container.appendChild(sectionEl);
   }
 
