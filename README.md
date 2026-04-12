@@ -2,6 +2,15 @@
 
 Plateforme de revision pour lyceens. SPA vanilla JS, mobile-first.
 
+## Navigation
+
+La navigation entre les onglets (Cours, Resume, Flashcards, Glossaire, Exercices) se fait via une barre d'onglets en haut de page, sous le titre du chapitre. Le header complet (titre + onglets) reste colle en haut lors du scroll.
+
+La barre s'adapte a la taille de l'ecran :
+- **Desktop (>= 600px)** : icone + label complet (Flashcards, Glossaire, Exercices)
+- **Tablette/mobile (420-599px)** : icone + label court (Flash., Gloss., Exos)
+- **Petit ecran (< 420px)** : icones seules
+
 ## Lancer le site en local
 
 Le site a besoin d'un serveur HTTP local pour fonctionner (les modules JS et le chargement des donnees ne marchent pas en ouvrant directement le fichier HTML).

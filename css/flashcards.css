@@ -664,14 +664,12 @@
    FOCUS MODE (#10)
    ══════════════════════════════════════ */
 
-.fc-focus .topbar { display: none; }
-.fc-focus .bottom-nav { display: none; }
-.fc-focus .tab-bar { display: none; }
+.fc-focus .chapter-header { display: none; }
 .fc-focus .fc-stats-wrap { display: none; }
 .fc-focus .fc-filter-container { display: none !important; }
 
 /* Focus mode: center card vertically */
-.fc-focus .view.has-bottom-nav {
+.fc-focus .view {
   padding-bottom: 0;
 }
 .fc-focus .tab-content {

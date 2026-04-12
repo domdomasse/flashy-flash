@@ -162,9 +162,6 @@ html { scroll-behavior: smooth; }
     color: var(--accent);
   }
 
-  /* Bottom nav */
-  .bottom-nav-btn:hover:not(.active) { color: var(--text-secondary); }
-
   /* Back to top */
   .back-to-top:hover { filter: brightness(1.15); }
 }

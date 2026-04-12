@@ -6,17 +6,21 @@
   padding: 0 16px;
 }
 
+/* Chapter header (sticky container for topbar + tab bar) */
+.chapter-header {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
+}
+
 /* Top bar */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
+  padding: 16px 0 8px;
   gap: 12px;
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  z-index: 100;
 }
 
 /* Topbar center: chapter title + optional section indicator */
@@ -146,83 +150,58 @@
 }
 
 /* ══════════════════════════════════════
-   TAB BAR (desktop ≥ 1024px only)
+   TAB BAR (all screen sizes)
    ══════════════════════════════════════ */
 
 .tab-bar {
-  display: none; /* hidden on mobile/tablet */
-}
-
-/* ══════════════════════════════════════
-   BOTTOM NAV (mobile/tablet < 1024px)
-   ══════════════════════════════════════ */
-
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
   display: flex;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
 }
-.bottom-nav-btn {
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-bar button {
   flex: 1;
+  min-width: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 8px 0 6px;
-  min-height: 56px;
+  padding: 8px 6px;
+  min-height: var(--tap-size);
   border: none;
   background: none;
   color: var(--text-muted);
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: color var(--transition);
-  position: relative;
-}
-.bottom-nav-btn.active {
-  color: var(--accent);
-}
-.bottom-nav-btn.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 25%;
-  right: 25%;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 0 0 2px 2px;
-}
-.bottom-nav-btn:active { opacity: 0.7; }
-.bottom-nav-label {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  touch-action: manipulation;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.tab-bar button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-bar button:active { opacity: 0.7; }
+
+/* Full label visible by default, short label hidden */
+.tab-bar-label-short { display: none; }
+
+/* Medium screens (420–599px): short labels */
+@media (max-width: 599px) {
+  .tab-bar-label { display: none; }
+  .tab-bar-label-short { display: inline; }
 }
 
-/* Compact bottom nav on small screens: icons only */
-@media (max-width: 360px) {
-  .bottom-nav-btn {
-    min-height: 44px;
-    padding: 6px 0 4px;
-    gap: 0;
-  }
-  .bottom-nav-label {
-    display: none;
-  }
-}
-
-/* Extra bottom padding when bottom nav is visible */
-.view.has-bottom-nav {
-  padding-bottom: max(80px, calc(56px + env(safe-area-inset-bottom, 24px)));
+/* Small screens (< 420px): icons only */
+@media (max-width: 419px) {
+  .tab-bar button { padding: 8px 4px; }
+  .tab-bar-label-short { display: none; }
 }
 
 /* Filter slot (legacy, kept for compatibility) */
@@ -234,51 +213,22 @@
   .subject-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
 }
 
-/* Responsive — desktop (≥ 1024px): top tabs, no bottom nav */
+/* Responsive — desktop */
 @media (min-width: 1024px) {
   #app { max-width: 960px; padding: 0 32px; }
 
-  /* Show top tab bar */
+  /* Desktop tab bar: horizontal with labels inline */
   .tab-bar {
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    position: static;
     margin-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-    scrollbar-width: none;
   }
-  .tab-bar::-webkit-scrollbar { display: none; }
   .tab-bar button {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
+    flex: 0 0 auto;
+    flex-direction: row;
     gap: 6px;
     padding: 12px 16px;
-    min-height: var(--tap-size);
-    border: none;
-    background: none;
-    color: var(--text-secondary);
     font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-    touch-action: manipulation;
-    transition: all var(--transition);
-    white-space: nowrap;
-  }
-  .tab-bar button.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-  .tab-bar button:active { opacity: 0.7; }
-
-  /* Hide bottom nav */
-  .bottom-nav { display: none; }
-
-  /* Reset bottom padding */
-  .view.has-bottom-nav {
-    padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+    color: var(--text-secondary);
   }
 }
 

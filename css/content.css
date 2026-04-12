@@ -55,7 +55,7 @@
 /* Offset scroll target to account for sticky topbar */
 .summary-section-title[id],
 .summary-subsection-title[id] {
-  scroll-margin-top: 88px;
+  scroll-margin-top: 130px;
 }
 
 .summary-section-title {
@@ -250,15 +250,6 @@
   opacity: 0.6;
 }
 
-/* When bottom nav is present on body, raise the button above it */
-.bottom-nav ~ .back-to-top {
-  bottom: 72px;
-}
-@media (min-width: 1024px) {
-  .bottom-nav ~ .back-to-top {
-    bottom: 24px;
-  }
-}
 
 /* ══════════════════════════════════════
    EXERCISES
