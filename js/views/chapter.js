@@ -137,6 +137,9 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     tabCleanupMark = getCleanupMark();
     refreshIcons();
     window.scrollTo(0, 0);
+    // Second scrollTo in rAF: forces Firefox Android to recalculate viewport
+    // when its bottom address bar is hidden (programmatic scroll alone doesn't trigger it)
+    requestAnimationFrame(() => window.scrollTo(0, 0));
   }
 
   // ── Render initial tab ──
