@@ -23,7 +23,8 @@ export async function renderCoursTab(container, subjectId, chapterId) {
     const sectionSlug = 'c-' + slugify(section.title);
     const sectionEl = el('div', { class: 'summary-section summary-card' });
 
-    const sectionToggle = el('div', { class: 'section-toggle', onClick: () => sectionToggle.classList.toggle('collapsed') },
+    const hasSubsections = section.subsections && section.subsections.length > 0;
+    const sectionToggle = el('div', { class: 'section-toggle' + (hasSubsections ? '' : ' no-separator'), onClick: () => sectionToggle.classList.toggle('collapsed') },
       el('span', { class: 'section-chevron' }, icon('chevron-down', 14)),
       el('h2', { class: 'summary-section-title', id: sectionSlug }, section.title)
     );

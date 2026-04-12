@@ -18,11 +18,6 @@ export function slugify(text) {
 /** Uncollapse any collapsed section-toggle ancestor of the target, then scroll to it */
 function scrollToSection(target) {
   if (!target) return;
-  // Uncollapse the direct parent toggle (subsection inside a section body)
-  const subToggle = target.closest('.section-body')?.previousElementSibling;
-  if (subToggle?.classList.contains('section-toggle', 'collapsed')) {
-    subToggle.classList.remove('collapsed');
-  }
   // Uncollapse the section-level toggle
   const sectionCard = target.closest('.summary-section');
   if (sectionCard) {
@@ -30,6 +25,19 @@ function scrollToSection(target) {
     if (sectionToggle?.classList.contains('collapsed')) {
       sectionToggle.classList.remove('collapsed');
     }
+  }
+  // Uncollapse the direct parent toggle (subsection inside a section body)
+  const parentBody = target.closest('.section-body');
+  if (parentBody) {
+    const subToggle = parentBody.previousElementSibling;
+    if (subToggle?.classList.contains('collapsed')) {
+      subToggle.classList.remove('collapsed');
+    }
+  }
+  // Also uncollapse if target is inside a section-toggle (clicking a part title)
+  const ownToggle = target.closest('.section-toggle');
+  if (ownToggle?.classList.contains('collapsed')) {
+    ownToggle.classList.remove('collapsed');
   }
   // Scroll after DOM update
   requestAnimationFrame(() => {

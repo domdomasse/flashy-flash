@@ -9,7 +9,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 20px;
 }
 /* ── Collapsible sections ── */
 .section-toggle {
@@ -36,15 +36,21 @@
   margin-bottom: 0;
 }
 .section-toggle + .section-body {
+  padding-top: 12px;
   transition: opacity 0.2s ease;
 }
 .section-toggle.collapsed + .section-body {
   display: none;
 }
 .summary-card > .section-toggle {
-  padding-bottom: 8px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+.summary-card > .section-toggle.no-separator {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 .summary-card > .section-toggle.collapsed {
   border-bottom: none;
@@ -74,9 +80,18 @@
 }
 .summary-subsection {
   margin-bottom: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.summary-subsection:first-child {
+  padding-top: 0;
+  border-top: none;
 }
 .summary-subsection:last-child {
   margin-bottom: 0;
+}
+.summary-subsection > .section-toggle {
+  padding-left: 30px;
 }
 .summary-subsection-title {
   font-size: 0.95rem;
@@ -88,6 +103,7 @@
   font-size: 0.92rem;
   line-height: 1.75;
   color: var(--text);
+  padding-left: 10px;
 }
 .summary-text p {
   margin-bottom: 12px;
@@ -97,10 +113,10 @@
   font-weight: 700;
 }
 .summary-text ul, .summary-text ol {
-  margin: 8px 0 12px 20px;
+  margin: 10px 0 14px 24px;
 }
 .summary-text li {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .summary-text li::marker {
   color: var(--accent);
@@ -207,7 +223,7 @@
   display: flex;
   align-items: center;
   min-height: 28px;
-  padding: 0 14px 0 40px;
+  padding: 0 14px 0 52px;
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.35;
