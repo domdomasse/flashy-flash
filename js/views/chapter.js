@@ -89,51 +89,29 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
   // Bottom nav hors de #app pour ne pas être affecté par le fade-in
   document.body.appendChild(bottomNav);
 
-  // Visual Viewport positioning for Firefox Android dynamic toolbar.
-  // Uses absolute positioning anchored to the visual viewport bottom,
-  // bypassing position:fixed which Firefox miscalculates during toolbar transitions.
-  let syncRafId = null;
-
+  // Firefox Android dynamic toolbar fix.
+  // position:fixed;bottom:0 is relative to the layout viewport, which Firefox
+  // updates with a delay during toolbar transitions. We keep position:fixed
+  // (flicker-free) and apply a translateY correction based on the visual viewport.
   function syncBottomNav() {
     if (!window.visualViewport) return;
     const vv = window.visualViewport;
-    const navH = bottomNav.offsetHeight || 56;
-    // Absolute position: scroll offset + visual viewport bottom - nav height
-    bottomNav.style.position = 'absolute';
-    bottomNav.style.bottom = 'auto';
-    bottomNav.style.top = (window.scrollY + vv.offsetTop + vv.height - navH) + 'px';
-  }
-
-  // Run a burst of syncs over ~600ms to catch Firefox toolbar transitions
-  function syncBurst() {
-    let frames = 0;
-    function loop() {
-      syncBottomNav();
-      if (++frames < 36) syncRafId = requestAnimationFrame(loop);
-    }
-    if (syncRafId) cancelAnimationFrame(syncRafId);
-    syncRafId = requestAnimationFrame(loop);
+    // How far the visual viewport bottom differs from the layout viewport bottom
+    const correction = (vv.offsetTop + vv.height) - window.innerHeight;
+    bottomNav.style.transform = Math.abs(correction) > 1 ? `translateY(${correction}px)` : '';
   }
 
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', syncBottomNav);
     window.visualViewport.addEventListener('scroll', syncBottomNav);
-    window.addEventListener('scroll', syncBottomNav, { passive: true });
-    window.addEventListener('touchmove', syncBottomNav, { passive: true });
-    syncBurst(); // initial burst
   }
 
   onCleanup(() => {
     bottomNav.remove();
-    bottomNav.style.position = '';
-    bottomNav.style.top = '';
-    bottomNav.style.bottom = '';
-    if (syncRafId) cancelAnimationFrame(syncRafId);
+    bottomNav.style.transform = '';
     if (window.visualViewport) {
       window.visualViewport.removeEventListener('resize', syncBottomNav);
       window.visualViewport.removeEventListener('scroll', syncBottomNav);
-      window.removeEventListener('scroll', syncBottomNav);
-      window.removeEventListener('touchmove', syncBottomNav);
     }
   });
 
@@ -184,8 +162,7 @@ export async function renderChapter(container, { subject: subjectId, chapter: ch
     tabCleanupMark = getCleanupMark();
     refreshIcons();
     window.scrollTo(0, 0);
-    // Burst sync for Firefox Android toolbar transition
-    syncBurst();
+    syncBottomNav();
   }
 
   // ── Render initial tab ──
