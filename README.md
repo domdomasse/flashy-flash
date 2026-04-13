@@ -12,6 +12,11 @@ Le site a besoin d'un serveur HTTP local pour fonctionner (les modules JS et le 
 | **macOS** | `start.command` | Double-clic (ouvre Terminal automatiquement) |
 | **Windows** | `start.bat` | Double-clic |
 
+Si le script ne fonctionne pas, ouvrir un terminal dans le dossier du projet et lancer :
+
+```bash
+python3 -m http.server 8000
+```
 Le script lance un serveur sur `http://localhost:8080` et ouvre le navigateur. Pour arreter : `Ctrl+C` dans le terminal.
 
 ## Panneau admin
@@ -24,16 +29,11 @@ L'outil admin permet de generer de nouveaux chapitres a partir de photos ou PDF 
 | **macOS** | `admin/start.command` | Double-clic (ouvre Terminal automatiquement) |
 | **Windows** | `admin/start.bat` | Double-clic |
 
-Le panneau admin se lance sur `http://localhost:8000`.
-
-## Lancement manuel
-
-Si les scripts ne fonctionnent pas, ouvrir un terminal dans le dossier du projet et lancer :
+Si le script ne fonctionne pas, ouvrir un terminal dans le dossier du projet et lancer :
 
 ```bash
-python3 -m http.server 8080
+python3 -m http.server 8000
 ```
-
-Puis ouvrir `http://localhost:8080` dans le navigateur.
+Le panneau admin se lance sur `http://localhost:8000`.
 
 > **Note :** Python 3 est requis. Il est pre-installe sur macOS et la plupart des distributions Linux. Sur Windows, installer depuis [python.org](https://www.python.org/downloads/).
