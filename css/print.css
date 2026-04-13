@@ -3,7 +3,7 @@
 
   .topbar, .tab-bar, .btn-back, .btn-icon,
   .search-bar, .fc-nav, .fc-actions, .fc-filters,
-  .fc-swipe-hint, .fc-fav-btn, .fc-hint,
+  .fc-fav-btn,
   .timer-bar, .exercise-reveal-btn, .settings-btn-group,
   .dashboard-stats-row { display: none !important; }
 

@@ -57,17 +57,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   const listToggleBtn = el('button', { class: 'fc-list-toggle', 'aria-label': 'Liste des cartes', onClick: toggleListMode }, icon('list', 16));
   const focusToggleBtn = el('button', { class: 'fc-list-toggle', 'aria-label': 'Mode focus', onClick: toggleFocusMode }, icon('maximize-2', 16));
 
-  let hintTimer = null;
-  const infoBtn = el('button', { class: 'fc-list-toggle', onClick: () => {
-    swipeHint.classList.remove('hidden');
-    cardHint.classList.add('visible');
-    clearTimeout(hintTimer);
-    hintTimer = setTimeout(() => {
-      swipeHint.classList.add('hidden');
-      cardHint.classList.remove('visible');
-    }, 3000);
-  }}, icon('info', 14));
-  infoBtn.setAttribute('aria-label', 'Commandes');
 
   // ── Filter menu (drawer on mobile, dropdown on desktop) ──
   const filterBtns = [];
@@ -108,20 +97,50 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     ),
     filterList
   );
-  const filterContainer = el('div', { class: 'fc-filter-container' }, filterOverlay, filterMenu);
-
   let filterMenuOpen = false;
+
+  function positionDropdown() {
+    const rect = filterTrigger.getBoundingClientRect();
+    const dropdownWidth = 260;
+    const margin = 16;
+    const maxLeft = window.innerWidth - dropdownWidth - margin;
+    filterMenu.style.top = (rect.bottom + 8) + 'px';
+    filterMenu.style.left = Math.min(rect.left, maxLeft) + 'px';
+  }
+
   function toggleFilterMenu() {
     filterMenuOpen = !filterMenuOpen;
-    filterContainer.classList.toggle('open', filterMenuOpen);
+    filterOverlay.classList.toggle('open', filterMenuOpen);
+    filterMenu.classList.toggle('open', filterMenuOpen);
     filterTrigger.classList.toggle('active', filterMenuOpen);
-    if (filterMenuOpen) refreshIcons();
+    if (filterMenuOpen) {
+      if (window.innerWidth >= 768) {
+        positionDropdown();
+      } else {
+        filterMenu.style.top = '';
+        filterMenu.style.left = '';
+      }
+      refreshIcons();
+    }
   }
   function closeFilterMenu() {
     filterMenuOpen = false;
-    filterContainer.classList.remove('open');
+    filterOverlay.classList.remove('open');
+    filterMenu.classList.remove('open');
     filterTrigger.classList.remove('active');
   }
+
+  // Reposition dropdown or reset styles on resize / mode change
+  function handleFilterResize() {
+    if (!filterMenuOpen) return;
+    if (window.innerWidth >= 768) {
+      positionDropdown();
+    } else {
+      filterMenu.style.top = '';
+      filterMenu.style.left = '';
+    }
+  }
+  window.addEventListener('resize', handleFilterResize, { passive: true });
 
   // Swipe left to close filter drawer
   let fmTX = 0;
@@ -136,7 +155,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   const filterTrigger = el('button', { class: 'fc-filter-trigger', 'aria-label': 'Filtrer les catégories', onClick: toggleFilterMenu },
     icon('filter', 16), ' ', filterLabel, el('span', { class: 'fc-filter-chevron' }, icon('chevron-down', 14))
   );
-  const filterTriggerWrap = el('div', { class: 'fc-filter-trigger-wrap' }, filterTrigger, filterContainer);
+  const filterTriggerWrap = el('div', { class: 'fc-filter-trigger-wrap' }, filterTrigger);
 
   const badgeGood = el('span', { class: 'fc-badge good clickable', 'aria-label': 'Réponses correctes', onClick: () => toggleSessionList('good') }, icon('check', 14), ' ', countGood);
   const badgeBad = el('span', { class: 'fc-badge bad clickable', 'aria-label': 'Réponses incorrectes', onClick: () => toggleSessionList('bad') }, icon('x', 14), ' ', countBad);
@@ -152,7 +171,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     el('div', { class: 'fc-badges' },
       badgeGood, badgeBad,
       listToggleBtn,
-      infoBtn,
       printBtn,
       focusToggleBtn
     )
@@ -173,6 +191,7 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   onCleanup(() => {
     clearTimeout(statsCheckTimer);
     window.removeEventListener('resize', checkStatsOverflow);
+    window.removeEventListener('resize', handleFilterResize);
   });
 
   const progressBar = el('div', { class: 'fc-progress-wrap' }, progressFill);
@@ -269,13 +288,10 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     updateFavIcon(isFav);
   }}, icon('star', 18));
 
-  const cardHint = el('span', { class: 'fc-hint' }, 'Cliquer pour révéler');
-
   const cardEl = el('div', { class: 'fc-card' },
     el('div', { class: 'fc-card-inner' },
       el('div', { class: 'fc-card-front' },
-        categoryTag, favBtn, questionText,
-        cardHint
+        categoryTag, favBtn, questionText
       ),
       el('div', { class: 'fc-card-back' }, answerText)
     ),
@@ -283,9 +299,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   );
   const cardContainer = el('div', { class: 'fc-card-container' }, cardEl);
 
-  const swipeHint = el('p', { class: 'fc-swipe-hint hidden' },
-    icon('arrow-left', 12), icon('arrow-right', 12), ' Retourner \u00a0·\u00a0 ', icon('arrow-down', 12), ' Passer'
-  );
 
   // Actions
 
@@ -306,8 +319,17 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     el('div', { class: 'fc-end-actions' }, btnRestart, btnRetry, btnReset)
   );
 
-  const deckArea = el('div', { class: 'fc-deck-area' }, cardContainer, swipeHint, endEl);
+  // Shake visual feedback overlay
+  const shakeIcon = document.createElement('i');
+  shakeIcon.setAttribute('data-lucide', 'shuffle');
+  const shakeLabel = el('span', {}, 'Mélangé !');
+  const shakeOverlay = el('div', { class: 'fc-shake-overlay' }, shakeIcon, shakeLabel);
 
+  const deckArea = el('div', { class: 'fc-deck-area' }, cardContainer, endEl, shakeOverlay);
+
+  // Overlay + menu appended to body to escape ancestor overflow/transform/perspective clipping
+  document.body.appendChild(filterOverlay);
+  document.body.appendChild(filterMenu);
   container.append(statsWrap, progressBar, sessionWrap, deckArea, cardListEl);
 
   // ══════════════════════════════════════
@@ -466,7 +488,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   function initEmpty(msg) {
     deck = []; currentIdx = 0;
     cardContainer.style.display = 'none';
-    swipeHint.style.display = 'none';
     endEl.classList.add('hidden');
     let emptyEl = deckArea.querySelector('.fc-empty');
     if (!emptyEl) {
@@ -488,7 +509,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     countGood.textContent = '0'; countBad.textContent = '0';
     sessionWrap.classList.add('hidden'); sessionListType = null;
     cardContainer.style.display = '';
-    swipeHint.style.display = '';
     endEl.classList.add('hidden');
 
     // Fix counter widths based on total digits to avoid layout shift
@@ -534,13 +554,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     flipping = true;
     isFlipped = !isFlipped;
     cardEl.classList.toggle('flipped', isFlipped);
-    if (isFlipped) {
-      swipeHint.innerHTML = '';
-      swipeHint.append(icon('arrow-left', 12), ' À revoir \u00a0·\u00a0 Je savais ', icon('arrow-right', 12), ' \u00a0·\u00a0 ', icon('arrow-down', 12), ' Passer');
-    } else {
-      swipeHint.innerHTML = '';
-      swipeHint.append(icon('arrow-left', 12), icon('arrow-right', 12), ' Retourner \u00a0·\u00a0 ', icon('arrow-down', 12), ' Passer');
-    }
     setTimeout(() => { flipping = false; }, 550);
   }
 
@@ -620,7 +633,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
 
   function showEnd() {
     cardContainer.style.display = 'none';
-    swipeHint.style.display = 'none';
     endEl.classList.remove('hidden');
 
     const total = goodList.length + badList.length;
@@ -683,12 +695,19 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   const abortCtrl = new AbortController();
   onCleanup(() => {
     abortCtrl.abort();
-    clearTimeout(hintTimer);
     stopShakeDetection();
     document.getElementById('app').classList.remove('fc-focus');
+    filterOverlay.remove();
+    filterMenu.remove();
   });
 
   document.addEventListener('keydown', e => {
+    // Escape: close filter menu first, then focus mode
+    if (e.key === 'Escape') {
+      if (filterMenuOpen) { closeFilterMenu(); return; }
+      if (focusMode) { toggleFocusMode(); return; }
+      return;
+    }
     if (listMode || animating) return;
     if (!endEl.classList.contains('hidden')) return;
     if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
@@ -699,7 +718,6 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
     if ((e.key === 'b' || e.key === 'B') && isFlipped) answerCard(false);
     if (e.key === 's' || e.key === 'S') { if (!isFlipped) goNext(); }
     if (e.key === 'f' || e.key === 'F') favBtn.click();
-    if (e.key === 'Escape' && focusMode) toggleFocusMode();
   }, { signal: abortCtrl.signal });
 
   // ══════════════════════════════════════
@@ -713,6 +731,19 @@ export async function renderFlashcardsEngine(container, allCardsRaw, categories,
   if (prefs.shakeToShuffle) {
     startShakeDetection(() => {
       if (animating || listMode) return;
+      // Visual feedback: shake wiggle + icon pop
+      cardContainer.classList.remove('shaking');
+      shakeOverlay.classList.remove('visible');
+      // Force reflow to restart animations
+      void cardContainer.offsetWidth;
+      cardContainer.classList.add('shaking');
+      shakeOverlay.classList.add('visible');
+      refreshIcons();
+      setTimeout(() => {
+        cardContainer.classList.remove('shaking');
+        shakeOverlay.classList.remove('visible');
+      }, 650);
+      // Re-shuffle deck
       initDeck(getFiltered());
     });
   }
