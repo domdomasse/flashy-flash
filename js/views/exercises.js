@@ -42,11 +42,14 @@ export async function renderExercisesTab(container, subjectId, chapterId) {
     // Header (collapsible toggle)
     const typeLabels = { composition: 'Composition', croquis: 'Croquis', etude: 'Étude de doc' };
     const headerLeft = el('span', { class: 'exercise-type' }, typeLabels[exo.type] || exo.type);
-    const headerTitle = el('span', { class: 'exercise-header-title' }, exo.title);
+    const headerTitle = el('div', { class: 'exercise-header-title' }, exo.title);
     const headerRight = el('span', { class: 'exercise-duration' }, icon('clock', 14), ` ${exo.duration} min`);
     const exoToggle = el('div', { class: 'exercise-header section-toggle', onClick: () => exoToggle.classList.toggle('collapsed') },
-      el('span', { class: 'section-chevron' }, icon('chevron-down', 14)),
-      headerLeft, headerTitle, headerRight
+      el('div', { class: 'exercise-header-top' },
+        el('span', { class: 'section-chevron' }, icon('chevron-down', 14)),
+        headerLeft, headerRight
+      ),
+      headerTitle
     );
     card.appendChild(exoToggle);
 
